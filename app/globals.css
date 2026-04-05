@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core Cinematic Palette */
+  --bg-charcoal: #0F0F0F;
+  --bg-charcoal-light: #1A1A1A;
+  
+  --royal-maroon: #800000;
+  --royal-maroon-dark: #4A0000;
+  
+  --antique-gold: #D4AF37;
+  --antique-gold-soft: rgba(212, 175, 55, 0.6);
+  --antique-gold-dim: rgba(212, 175, 55, 0.2);
+
+  --ivory: #F5F5DC;
+  --ivory-muted: #E8E5D5;
+  --ivory-dim: rgba(245, 245, 220, 0.6);
+  
+  --muted-copper: #B87333;
+  
+  /* Layout constraints */
+  --max-w: 1200px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    cursor: none; /* We will use a custom spotlight cursor in React, but fallbacks are good */
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--bg-charcoal);
+    color: var(--ivory-muted);
+    font-family: "Lora", serif; /* Fallback, handled in layout */
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Core Fabric/Grain Texture Overlay */
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.04;
+    background-image: 
+      radial-gradient(var(--ivory) 1px, transparent 1px),
+      radial-gradient(var(--ivory) 1px, transparent 1px);
+    background-position: 0 0, 2px 2px;
+    background-size: 4px 4px;
+    mix-blend-mode: overlay;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .font-cinema {
+    font-family: inherit; /* overridden by next/font */
+  }
+  
+  .font-script {
+    font-family: inherit;
+  }
+
+  /* Spotlight Background Effects */
+  .stage-spotlight {
+    background: radial-gradient(circle at center, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
+  }
+
+  .stage-spotlight-maroon {
+    background: radial-gradient(circle at center, rgba(128, 0, 0, 0.15) 0%, transparent 70%);
+  }
+
+  /* Cinematic Texts */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #F5F5DC 0%, #D4AF37 50%, #B87333 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Component Styles */
+  .framed-card {
+    background-color: var(--bg-charcoal-light);
+    border: 1px solid var(--antique-gold-dim);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    position: relative;
+    transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .framed-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--antique-gold-soft);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px var(--antique-gold-dim);
+  }
+
+  .engraved-btn {
+    position: relative;
+    background: transparent;
+    color: var(--ivory);
+    border: 1px solid var(--antique-gold-soft);
+    overflow: hidden;
+    transition: all 0.5s ease;
+    box-shadow: inset 0 0 0 rgba(212, 175, 55, 0);
+  }
+
+  .engraved-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .engraved-btn:hover {
+    border-color: var(--antique-gold);
+    color: #fff;
+    box-shadow: inset 0 0 20px var(--antique-gold-dim), 0 0 15px var(--antique-gold-dim);
+  }
+
+  .engraved-btn:hover::before {
+    opacity: 1;
+  }
+
+  /* Inputs */
+  .input-royal {
+    background: rgba(26, 26, 26, 0.5);
+    border: 1px solid transparent;
+    border-bottom: 2px solid var(--royal-maroon-dark);
+    color: var(--ivory);
+    transition: all 0.4s ease;
+  }
+
+  .input-royal:focus {
+    outline: none;
+    background: rgba(26, 26, 26, 0.8);
+    border-bottom-color: var(--antique-gold);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Animations for loading */
+  @keyframes curtain-open-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  @keyframes curtain-open-right {
+    from { transform: translateX(0); }
+    to { transform: translateX(100%); }
+  }
 }
