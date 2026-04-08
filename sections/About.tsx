@@ -62,8 +62,8 @@ export default function About() {
             {[
               { icon: <Sparkles size={18}/>, label: "Acts", value: "3" },
               { icon: <Feather size={18}/>, label: "Genres", value: "3+" },
-              { icon: <BookOpen size={18}/>, label: "Date", value: "24 Apr" },
-              { icon: <Sparkles size={18}/>, label: "Time", value: "5:30 PM" },
+              { icon: <BookOpen size={18}/>, label: "Dates", value: "11 & 13 Apr" },
+              { icon: <Sparkles size={18}/>, label: "Time", value: "12:30 & 5:30" },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -77,6 +77,25 @@ export default function About() {
                 <span className="font-script text-[0.6rem] uppercase tracking-[0.2em] text-[var(--antique-gold-soft)]">{stat.label}</span>
               </motion.div>
             ))}
+          </div>
+
+          <div className="mt-12 text-center border border-[rgba(212,175,55,0.15)] bg-[rgba(212,175,55,0.02)] p-6 md:p-8 w-full max-w-3xl">
+            <h4 className="font-cinema text-[var(--antique-gold)] text-lg uppercase tracking-wider mb-6 border-b border-[rgba(212,175,55,0.2)] pb-2 inline-block">Event Schedule &amp; Venues</h4>
+            <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-16 text-left">
+              <div>
+                <p className="font-cinema text-[var(--ivory)] text-md tracking-wider mb-1">11th April 2026</p>
+                <p className="font-script text-[var(--antique-gold-soft)] text-sm mb-2">12:30 PM</p>
+                <p className="font-script text-[var(--ivory-muted)] text-sm mb-1">📍 MBA Open Quadrangle</p>
+                <p className="font-script text-[var(--ivory-dim)] text-xs mt-1 italic">Event: Cooking without fire</p>
+              </div>
+              <div className="hidden md:block w-[1px] bg-[rgba(212,175,55,0.2)]"></div>
+              <div>
+                <p className="font-cinema text-[var(--ivory)] text-md tracking-wider mb-1">13th April 2026</p>
+                <p className="font-script text-[var(--antique-gold-soft)] text-sm mb-2">5:30 PM</p>
+                <p className="font-script text-[var(--ivory-muted)] text-sm mb-1">📍 Gallery Hall, BEC</p>
+                <p className="font-script text-[var(--ivory-dim)] text-xs mt-1 italic">Events: Dance Competition, Skit/Drama</p>
+              </div>
+            </div>
           </div>
 
         </div>

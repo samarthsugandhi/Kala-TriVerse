@@ -37,14 +37,22 @@ export default function Contact() {
             <div className="bg-[#111] border border-[rgba(212,175,55,0.1)] p-10 flex flex-col items-center">
               <h3 className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-8 border-b border-[rgba(212,175,55,0.2)] pb-2 w-full">Student Execution</h3>
               
-              <div className="flex flex-col sm:flex-row w-full justify-around gap-6 sm:gap-0 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 w-full gap-6 mb-8 gap-y-8">
                 <div className="text-center">
-                  <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Samarth Sugandhi</p>
-                  <a href="tel:7353682322" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 7353682322</a>
+                  <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Vinayak</p>
+                  <a href="tel:6361767094" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 63617 67094</a>
                 </div>
                 <div className="text-center">
-                  <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Vinayak Killedar</p>
-                  <a href="tel:9901357911" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 9901357911</a>
+                  <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Samarth</p>
+                  <a href="tel:7353682322" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 73536 82322</a>
+                </div>
+                <div className="text-center">
+                  <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Niharika</p>
+                  <a href="tel:9663992104" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 96639 92104</a>
+                </div>
+                <div className="text-center">
+                  <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Sneha Y</p>
+                  <a href="tel:7899057706" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 78990 57706</a>
                 </div>
               </div>
 

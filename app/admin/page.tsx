@@ -12,10 +12,17 @@ import { LogOut, Trash2, Edit, Download, Plus, Search, ShieldAlert, X } from "lu
 interface Member {
   name: string;
   usn: string;
+  semester: string;
+  branch: string;
+  email: string;
+  phone: string;
+  stay: string;
+  hostelName: string;
 }
 
 interface Registration {
   id: string;
+  teamId?: string;
   teamName: string;
   act: string;
   leadName: string;
@@ -162,7 +169,19 @@ export default function AdminPage() {
 
   const filtered = registrations.filter(r => {
     const matchAct = filterAct ? r.act === filterAct : true;
-    const matchSearch = (r.teamName?.toLowerCase().includes(searchTerm.toLowerCase()) || r.leadName?.toLowerCase().includes(searchTerm.toLowerCase()) || r.usn?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const search = searchTerm.toLowerCase();
+    const matchSearch = !search || (
+      (r.teamName?.toLowerCase() || "").includes(search) || 
+      (r.teamId?.toLowerCase() || "").includes(search) ||
+      (r.leadName?.toLowerCase() || "").includes(search) || 
+      (r.usn?.toLowerCase() || "").includes(search) ||
+      (r.branch?.toLowerCase() || "").includes(search) ||
+      (r.members || []).some(m => 
+        (m.name?.toLowerCase() || "").includes(search) || 
+        (m.usn?.toLowerCase() || "").includes(search) || 
+        (m.branch?.toLowerCase() || "").includes(search)
+      )
+    );
     return matchAct && matchSearch;
   });
 
@@ -248,30 +267,46 @@ export default function AdminPage() {
           <table className="w-full text-left font-script text-sm">
             <thead>
               <tr className="bg-black text-[var(--antique-gold)] uppercase tracking-widest font-cinema text-xs">
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">Team Name</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">Act</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">Lead Performer</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">USN / Branch</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">Stay</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">Cast #</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)]">Placement</th>
-                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] text-right">Actions</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Team ID</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Team Name</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Act</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Lead Performer</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">USN / CSN</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Branch</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Stay</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Teammates</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Teammate USN</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Teammate Branch</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Teammate Stay</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] whitespace-nowrap">Placement</th>
+                <th className="p-4 border-b border-[rgba(212,175,55,0.2)] text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(r => (
                 <tr key={r.id} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(212,175,55,0.02)] transition-colors">
-                  <td className="p-4 font-bold text-[var(--ivory)]">{r.teamName}</td>
-                  <td className="p-4">
+                  <td className="p-4 font-bold text-[var(--antique-gold-soft)] whitespace-nowrap">{r.teamId || "-"}</td>
+                  <td className="p-4 font-bold text-[var(--ivory)] whitespace-nowrap">{r.teamName}</td>
+                  <td className="p-4 whitespace-nowrap">
                     <span className="bg-[rgba(128,0,0,0.3)] text-[var(--ivory-muted)] px-2 py-1 text-xs uppercase tracking-wider border border-[rgba(128,0,0,0.5)]">{r.act}</span>
                   </td>
-                  <td className="p-4">{r.leadName}</td>
-                  <td className="p-4 text-xs">
-                    <div className="text-[var(--antique-gold-soft)]">{r.usn}</div>
-                    <div className="opacity-60">{r.branch} - S{r.semester}</div>
+                  <td className="p-4 whitespace-nowrap">{r.leadName}</td>
+                  <td className="p-4 text-xs whitespace-nowrap">{r.usn}</td>
+                  <td className="p-4 text-xs whitespace-nowrap">{r.branch}</td>
+                  <td className="p-4 text-xs whitespace-nowrap">{r.stay === "hostel" ? r.hostelName : "Local"}</td>
+                  
+                  <td className="p-4 text-xs whitespace-nowrap">
+                    {r.members?.length ? r.members.map((m, i) => <div key={i} className="mb-2">{m.name}</div>) : <div className="opacity-50">-</div>}
                   </td>
-                  <td className="p-4 text-xs">{r.stay === "hostel" ? r.hostelName : "Local"}</td>
-                  <td className="p-4">{(r.members?.length || 0) + 1}</td>
+                  <td className="p-4 text-xs whitespace-nowrap">
+                    {r.members?.length ? r.members.map((m, i) => <div key={i} className="mb-2">{m.usn}</div>) : <div className="opacity-50">-</div>}
+                  </td>
+                  <td className="p-4 text-xs whitespace-nowrap">
+                    {r.members?.length ? r.members.map((m, i) => <div key={i} className="mb-2">{m.branch}</div>) : <div className="opacity-50">-</div>}
+                  </td>
+                  <td className="p-4 text-xs whitespace-nowrap">
+                    {r.members?.length ? r.members.map((m, i) => <div key={i} className="mb-2">{m.stay === "hostel" ? m.hostelName : "Local"}</div>) : <div className="opacity-50">-</div>}
+                  </td>
                   <td className="p-4">
                     <select 
                       value={r.placement || ""} 
@@ -292,7 +327,7 @@ export default function AdminPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center italic opacity-50">No acts found matching constraints.</td>
+                  <td colSpan={13} className="p-8 text-center italic opacity-50">No acts found matching constraints.</td>
                 </tr>
               )}
             </tbody>

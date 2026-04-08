@@ -3,7 +3,7 @@
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { db } from "@/firebase/config";
-import { onSnapshot, doc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { onSnapshot, doc, addDoc, collection, serverTimestamp, getDocs } from "firebase/firestore";
 import { Plus, Minus, Lock } from "lucide-react";
 
 const EVENT_OPTIONS = [
@@ -12,7 +12,7 @@ const EVENT_OPTIONS = [
   { value: "western", label: "Act II: Western Dance" },
   { value: "folk", label: "Act III: Janapada Folk" },
   { value: "drama", label: "Act IV: Drama / Skit" },
-  { value: "food", label: "Act V: Culinary Art (Paka)" },
+  { value: "food", label: "Act V: Cooking without Fire" },
 ];
 
 const SEMESTER_OPTIONS = [
@@ -38,6 +38,7 @@ interface Member {
   phone: string;
   stay: string;
   hostelName: string;
+  otherBranch?: string;
 }
 
 export default function Registration() {
@@ -68,11 +69,82 @@ export default function Registration() {
     phone: "",
     stay: "local", // local or hostel
     hostelName: "", // if stay == hostel
+    otherBranch: "",
     members: [] as Member[],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [successTeamId, setSuccessTeamId] = useState("");
+  const [successInfo, setSuccessInfo] = useState<{ id: string, name: string, act: string, date: string } | null>(null);
+
+  const downloadPass = (info?: { id: string, name: string, act: string, date: string }) => {
+    const data = info || successInfo;
+    if (!data) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 800;
+    canvas.height = 450;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Background
+    ctx.fillStyle = "#0a0a0a"; // Solid dark charcoal
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title
+    ctx.fillStyle = "#D4AF37"; // var(--antique-gold)
+    ctx.font = "bold 44px 'Times New Roman', serif";
+    ctx.fillText("KALA-TRIVERSE : FUSION FEST", 40, 80);
+
+    // Subtitle
+    ctx.fillStyle = "#e0e0e0";
+    ctx.font = "24px 'Times New Roman', serif";
+    ctx.fillText("EVENT PASS", 40, 130);
+
+    // Divider
+    ctx.fillStyle = "rgba(212,175,55,0.4)";
+    ctx.fillRect(40, 160, canvas.width - 80, 1);
+
+    // Team info
+    ctx.fillStyle = "#b0b0b0";
+    ctx.font = "24px 'Times New Roman', serif";
+    ctx.fillText(`Team: `, 40, 220);
+    ctx.fillStyle = "#e0e0e0";
+    ctx.fillText(data.name, 120, 220);
+
+    // Event Name
+    ctx.fillStyle = "#b0b0b0";
+    ctx.fillText(`Event: `, 40, 260);
+    ctx.fillStyle = "#e0e0e0";
+    ctx.fillText(data.act, 120, 260);
+
+    // Registration ID
+    ctx.fillStyle = "#b0b0b0";
+    ctx.fillText(`Registration ID: `, 40, 300);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 26px 'Times New Roman', serif";
+    ctx.fillText(data.id, 210, 300);
+
+    // Note
+    ctx.fillStyle = "#888888";
+    ctx.font = "20px 'Times New Roman', serif";
+    ctx.fillText("Carry this pass (Registration ID) at event entry.", 40, 360);
+
+    // Date
+    ctx.fillStyle = "#666666";
+    ctx.font = "italic 20px 'Times New Roman', serif";
+    ctx.fillText(data.date, 40, 410);
+
+    // KALA Watermark on the right side
+    ctx.fillStyle = "rgba(212, 175, 55, 0.05)";
+    ctx.font = "bold 160px 'Times New Roman', serif";
+    ctx.fillText("KALA", 450, 280);
+
+    const link = document.createElement("a");
+    link.download = `${data.id}-Event-Pass.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   const usnRegex = /^[1-4][A-Z]{2}\d{2}[A-Z]{2}\d{3}$/i; // E.g. 2BA23IS001
 
@@ -85,6 +157,7 @@ export default function Registration() {
     if (!usnRegex.test(form.usn)) e.usn = "Invalid USN format (e.g. 2BA23IS001)";
     if (!form.semester) e.semester = "Select a semester";
     if (!form.branch.trim()) e.branch = "Branch is required";
+    if (form.branch === "Others" && !form.otherBranch.trim()) e.otherBranch = "Please specify branch";
     
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Valid email required";
     if (!/^\d{10}$/.test(form.phone)) e.phone = "10-digit number required";
@@ -98,6 +171,7 @@ export default function Registration() {
       if (!usnRegex.test(m.usn)) e[`member_${idx}_usn`] = "Invalid USN";
       if (!m.semester) e[`member_${idx}_semester`] = "Required";
       if (!m.branch.trim()) e[`member_${idx}_branch`] = "Required";
+      if (m.branch === "Others" && !m.otherBranch?.trim()) e[`member_${idx}_otherBranch`] = "Required";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m.email)) e[`member_${idx}_email`] = "Invalid email";
       if (!/^\d{10}$/.test(m.phone)) e[`member_${idx}_phone`] = "10 digits";
       if (m.stay === "hostel" && !m.hostelName) {
@@ -125,7 +199,7 @@ export default function Registration() {
 
   const addMember = () => {
     setForm(prev => ({ ...prev, members: [...prev.members, { 
-      name: "", usn: "", semester: "", branch: "", email: "", phone: "", stay: "local", hostelName: "" 
+      name: "", usn: "", semester: "", branch: "", otherBranch: "", email: "", phone: "", stay: "local", hostelName: "" 
     }] }));
   };
 
@@ -140,9 +214,34 @@ export default function Registration() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setStatus("loading");
     try {
-      await addDoc(collection(db, "registrations"), { ...form, createdAt: serverTimestamp() });
+      const snap = await getDocs(collection(db, "registrations"));
+      const count = snap.size + 1;
+      const generatedId = `IS-KT-${count.toString().padStart(3, '0')}`;
+      
+      const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
+      let eventDate = "April 2026";
+      if (form.act === "food") eventDate = "11th April 2026";
+      else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
+
+      const finalForm = { ...form };
+      if (finalForm.branch === "Others") finalForm.branch = finalForm.otherBranch;
+      delete (finalForm as any).otherBranch;
+      finalForm.members = finalForm.members.map(m => {
+        const newM = { ...m };
+        if (newM.branch === "Others") newM.branch = newM.otherBranch || "Others";
+        delete newM.otherBranch;
+        return newM;
+      });
+
+      await addDoc(collection(db, "registrations"), { ...finalForm, teamId: generatedId, createdAt: serverTimestamp() });
+      const info = { id: generatedId, name: form.teamName, act: eventDetails, date: eventDate };
+      setSuccessTeamId(generatedId);
+      setSuccessInfo(info);
       setStatus("success");
-      setForm({ teamName: "", act: "", leadName: "", usn: "", semester: "", branch: "", email: "", phone: "", stay: "local", hostelName: "", members: [] });
+      setForm({ teamName: "", act: "", leadName: "", usn: "", semester: "", branch: "", otherBranch: "", email: "", phone: "", stay: "local", hostelName: "", members: [] });
+      
+      // Auto-download logic
+      setTimeout(() => downloadPass(info), 500);
     } catch {
       setStatus("error");
     }
@@ -213,16 +312,29 @@ export default function Registration() {
                     <h3 className="font-cinema text-3xl text-[var(--ivory)] uppercase tracking-widest mb-4">
                       The Stage is Set
                     </h3>
-                    <p className="font-script text-[var(--ivory-muted)] mb-10 leading-loose">
+                    <p className="font-script text-[var(--ivory-muted)] mb-6 leading-loose">
                       Your team's script has been recorded. <br/>
-                      Join us on the 24th of April, 2026.
+                      Team ID: <span className="font-cinema text-[var(--antique-gold)] text-xl ml-2 tracking-widest">{successTeamId}</span>
                     </p>
-                    <button
-                      onClick={() => setStatus("idle")}
-                      className="engraved-btn font-cinema tracking-widest uppercase px-10 py-4 text-xs"
-                    >
-                      Register Another Act
-                    </button>
+
+                    <a href="https://chat.whatsapp.com/FF5tduDBfQxLtcuz4z69Rk?mode=gi_t" target="_blank" rel="noopener noreferrer" className="font-script text-blue-400 hover:text-blue-300 underline mb-8 block transition-colors tracking-wide text-sm">
+                      Join our WhatsApp Group for Updates
+                    </a>
+
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <button
+                        onClick={() => downloadPass()}
+                        className="bg-[var(--antique-gold)] text-black font-cinema tracking-widest uppercase px-8 py-3 text-xs hover:bg-[var(--ivory)] transition-colors"
+                      >
+                        Download Event Pass
+                      </button>
+                      <button
+                        onClick={() => setStatus("idle")}
+                        className="engraved-btn font-cinema tracking-widest uppercase px-8 py-3 text-xs"
+                      >
+                        Register Another Act
+                      </button>
+                    </div>
                   </motion.div>
                 ) : (
                   <motion.form
@@ -233,6 +345,25 @@ export default function Registration() {
                     exit={{ opacity: 0 }}
                     className="flex flex-col gap-10"
                   >
+                    {/* Fee Details Box */}
+                    <div className="bg-[#111] border-[1.5px] border-[var(--antique-gold)] p-6 text-center space-y-4 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-red-600 via-[var(--antique-gold)] to-red-600 opacity-80" />
+                      
+                      <h4 className="font-cinema text-[var(--antique-gold)] text-xl uppercase tracking-widest">Registration Fees</h4>
+                      <p className="font-script text-[var(--ivory)] text-xl">Individual – ₹100 <span className="mx-4 text-[var(--antique-gold-soft)]">|</span> Team – ₹250</p>
+                      
+                      <div className="mt-6 p-4 sm:p-5 bg-red-950/60 border border-red-500 rounded text-left inline-block relative overflow-hidden shadow-lg w-full max-w-2xl">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-red-500 animate-pulse" />
+                        
+                        <p className="font-script text-red-50 text-base leading-relaxed pl-3 relative z-10">
+                          <span className="text-red-400 font-bold uppercase tracking-widest block mb-2 sm:mb-1 text-sm tracking-[0.2em] font-cinema">Critical Notice</span>
+                          Please complete your registration form here. <br className="hidden sm:block" />
+                          <span className="text-white font-bold bg-red-600 px-2 py-0.5 rounded mr-1 inline-block uppercase tracking-wider my-1 shadow-[0_0_10px_rgba(220,38,38,0.6)]">Offline Payment Only</span>
+                           The registration fee will be collected in person on the day of the event.
+                        </p>
+                      </div>
+                    </div>
+
                     {/* SECTION: Act Details */}
                     <div>
                       <h4 className="font-cinema text-[var(--antique-gold)] text-lg border-b border-[rgba(212,175,55,0.2)] pb-2 mb-6 uppercase tracking-wider">I. The Performance</h4>
@@ -275,8 +406,16 @@ export default function Registration() {
                         </div>
                         <div>
                           <label className="font-cinema text-[0.6rem] text-[var(--antique-gold-soft)] tracking-[0.2em] uppercase mb-2 block">Branch</label>
-                          <input name="branch" value={form.branch} onChange={handleChange} className="w-full input-royal px-4 py-3 font-script text-sm" placeholder="e.g. ISE, CSE" />
+                          <select name="branch" value={form.branch} onChange={handleChange} className="w-full input-royal px-4 py-3 font-script text-sm appearance-none cursor-pointer">
+                            {["Select Branch", "CSE", "ISE", "ECE", "EEE", "MECH", "CIVIL", "ECS", "AIML", "BT", "AU", "MCA", "Others"].map((b, i) => <option key={i} value={b === "Select Branch" ? "" : b} className="bg-[#1A1A1A]">{b}</option>)}
+                          </select>
                           {errors.branch && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors.branch}</p>}
+                          {form.branch === "Others" && (
+                            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-2">
+                              <input name="otherBranch" value={form.otherBranch} onChange={handleChange} className="w-full input-royal px-4 py-3 font-script text-sm" placeholder="Specify Your Branch" />
+                              {errors.otherBranch && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors.otherBranch}</p>}
+                            </motion.div>
+                          )}
                         </div>
                         <div>
                           <label className="font-cinema text-[0.6rem] text-[var(--antique-gold-soft)] tracking-[0.2em] uppercase mb-2 block">Gmail ID</label>
@@ -314,12 +453,7 @@ export default function Registration() {
 
                     {/* SECTION: Team Members List */}
                     <div>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[rgba(212,175,55,0.2)] pb-2 mb-6 gap-4">
-                        <h4 className="font-cinema text-[var(--antique-gold)] text-lg uppercase tracking-wider">III. Supporting Cast</h4>
-                        <button type="button" onClick={addMember} className="flex items-center gap-2 font-script italic text-xs text-[var(--antique-gold-soft)] hover:text-[var(--ivory)] transition-colors border border-[rgba(212,175,55,0.3)] px-3 py-1.5 bg-[rgba(212,175,55,0.05)]">
-                          <Plus size={14}/> <span>Add Teammate</span>
-                        </button>
-                      </div>
+                      <h4 className="font-cinema text-[var(--antique-gold)] text-lg border-b border-[rgba(212,175,55,0.2)] pb-2 mb-6 uppercase tracking-wider">III. Teammates</h4>
 
                       <AnimatePresence>
                         {form.members.map((member, idx) => (
@@ -353,8 +487,16 @@ export default function Registration() {
                                 {errors[`member_${idx}_semester`] && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors[`member_${idx}_semester`]}</p>}
                               </div>
                               <div>
-                                <input value={member.branch} onChange={(e) => handleMemberChange(idx, 'branch', e.target.value)} className="w-full input-royal px-4 py-3 font-script text-sm" placeholder="Branch" />
+                                <select value={member.branch} onChange={(e) => handleMemberChange(idx, 'branch', e.target.value)} className="w-full input-royal px-4 py-3 font-script text-sm appearance-none cursor-pointer">
+                                  {["Select Branch", "CSE", "ISE", "ECE", "EEE", "MECH", "CIVIL", "ECS", "AIML", "BT", "AU", "MCA", "Others"].map((b, i) => <option key={i} value={b === "Select Branch" ? "" : b} className="bg-[#1A1A1A]">{b}</option>)}
+                                </select>
                                 {errors[`member_${idx}_branch`] && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors[`member_${idx}_branch`]}</p>}
+                                {member.branch === "Others" && (
+                                  <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-2">
+                                    <input value={member.otherBranch || ""} onChange={(e) => handleMemberChange(idx, 'otherBranch', e.target.value)} className="w-full input-royal px-4 py-3 font-script text-sm" placeholder="Specify Branch" />
+                                    {errors[`member_${idx}_otherBranch`] && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors[`member_${idx}_otherBranch`]}</p>}
+                                  </motion.div>
+                                )}
                               </div>
                               <div>
                                 <input type="email" value={member.email} onChange={(e) => handleMemberChange(idx, 'email', e.target.value)} className="w-full input-royal px-4 py-3 font-script text-sm" placeholder="Gmail ID" />
@@ -389,8 +531,12 @@ export default function Registration() {
                         ))}
                       </AnimatePresence>
                       {form.members.length === 0 && (
-                        <p className="text-[var(--ivory-dim)] font-script italic text-sm opacity-50 text-center py-4 border border-dashed border-[rgba(212,175,55,0.2)]">No additional members added. (Solo Act)</p>
+                        <p className="text-[var(--ivory-dim)] font-script italic text-sm opacity-50 text-center py-4 border border-dashed border-[rgba(212,175,55,0.2)] mb-4">No additional members added. (Solo Act)</p>
                       )}
+                      
+                      <button type="button" onClick={addMember} className="flex mx-auto items-center gap-2 font-script italic text-sm text-[var(--antique-gold)] hover:text-[var(--ivory)] transition-colors border border-[rgba(212,175,55,0.4)] px-6 py-3 bg-[rgba(212,175,55,0.05)] mt-4">
+                        <Plus size={16}/> <span>Add Teammate</span>
+                      </button>
                     </div>
 
                     {status === "error" && (

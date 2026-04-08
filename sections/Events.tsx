@@ -11,16 +11,16 @@ export default function Events() {
   const events = [
     {
       id: "dance",
-      title: "Nritya",
+      title: "Dance Competition",
       subtitle: "The Canvas of Motion",
       desc: "Flowing rhythms cross three traditions: the divine geometry of Classical, the electric pulse of Western, and the earthy soul of Janapada (Folk).",
-      symbol: "🪷",
+      symbol: "💃",
       art: "bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.1),transparent_70%)]",
       delay: 0.2
     },
     {
       id: "drama",
-      title: "Natya",
+      title: "Skit/Drama",
       subtitle: "The Theatre of Life",
       desc: "Masks fall and truth emerges. Command the stage, direct your peers, and emote stories that linger long after the final curtain.",
       symbol: "🎭",
@@ -29,10 +29,10 @@ export default function Events() {
     },
     {
       id: "food",
-      title: "Paka",
+      title: "Cooking without fire",
       subtitle: "Culinary Alchemy",
       desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art where flavor, plating, and innovation take center stage.",
-      symbol: "🏺",
+      symbol: "👨‍🍳",
       art: "bg-[radial-gradient(circle_at_top_right,rgba(184,115,51,0.1),transparent_70%)]",
       delay: 0.6
     }
@@ -103,6 +103,12 @@ export default function Events() {
                   <p className="font-script text-[var(--ivory-muted)] text-sm leading-loose">
                     {ev.desc}
                   </p>
+
+                  {/* Prize Info */}
+                  <div className="mt-4 inline-block bg-[rgba(212,175,55,0.05)] border border-[rgba(212,175,55,0.2)] px-4 py-2">
+                    <p className="font-cinema text-[var(--antique-gold)] text-xs tracking-widest uppercase mb-1">Prize Pool</p>
+                    <p className="font-script text-[var(--ivory)] text-xs">1st: ₹2500 <span className="mx-2 text-[var(--antique-gold-soft)]">|</span> 2nd: ₹1500</p>
+                  </div>
                 </div>
 
                 {/* Footer Action */}
