@@ -117,13 +117,36 @@ export default function AdminPage() {
     setModalOpen(true);
   };
 
+  const getNextTeamId = () => {
+    const usedNumbers = new Set(
+      registrations
+        .map((r) => {
+          const numericPart = r.teamId?.split("-").pop();
+          const parsed = Number(numericPart);
+          return Number.isFinite(parsed) ? parsed : null;
+        })
+        .filter((n): n is number => n !== null)
+    );
+
+    let next = 1;
+    while (usedNumbers.has(next)) next += 1;
+    return `IS-KT-${next.toString().padStart(3, "0")}`;
+  };
+
   const handleModalSave = async () => {
     if (!formData.teamName || !formData.act || !formData.leadName) return alert("Missing required fields: Team Name, Act, Lead Name");
     try {
       if (editId) {
-        await updateDoc(doc(db, "registrations", editId), { ...formData });
+        await updateDoc(doc(db, "registrations", editId), {
+          ...formData,
+          teamId: formData.teamId || getNextTeamId(),
+        });
       } else {
-        await addDoc(collection(db, "registrations"), { ...formData, createdAt: serverTimestamp() });
+        await addDoc(collection(db, "registrations"), {
+          ...formData,
+          teamId: getNextTeamId(),
+          createdAt: serverTimestamp(),
+        });
       }
       setModalOpen(false);
     } catch (err) {
@@ -133,29 +156,6 @@ export default function AdminPage() {
 
   const updatePlacement = async (id: string, val: string) => {
     await updateDoc(doc(db, "registrations", id), { placement: val });
-  };
-
-  const wipeAllData = async () => {
-    const confirmation = confirm("This will attempt to delete all visible registrations. If it fails due to permissions, please use the 'Manual Purge' guide below. Proceed?");
-    if (!confirmation) return;
-    
-    try {
-      const deletePromises = registrations.map(reg => deleteDoc(doc(db, "registrations", reg.id)));
-      await Promise.all(deletePromises);
-      alert("Database wipe attempted. Please refresh the page. If teams persist, use the Firebase Console for a Manual Purge.");
-    } catch (err) {
-      alert("Wipe failed (Permission Error). Use the Manual Purge instructions.");
-    }
-  };
-
-  const resetCounter = async () => {
-    if (!confirm("This will force the next registration to be IS-KT-001. Are you sure?")) return;
-    try {
-      await setDoc(doc(db, "settings", "counters"), { registrationCount: 0 });
-      alert("Counter Reset! The next registration will be IS-KT-001.");
-    } catch (err) {
-      alert("Counter reset failed. Admin permissions required.");
-    }
   };
 
   const exportCSV = () => {
@@ -276,12 +276,6 @@ export default function AdminPage() {
             <button onClick={openAddModal} className="flex items-center gap-2 bg-[rgba(212,175,55,0.1)] border border-[var(--antique-gold-soft)] text-[var(--ivory)] hover:bg-[var(--antique-gold)] hover:text-black transition-colors px-4 py-2 font-cinema tracking-widest text-xs uppercase">
               <Plus size={16}/> Override Add
             </button>
-            <button onClick={resetCounter} className="flex items-center gap-2 border border-[var(--antique-gold)] text-[var(--antique-gold)] hover:bg-[var(--antique-gold)] hover:text-black transition-all px-4 py-2 font-cinema tracking-widest text-[0.6rem] uppercase">
-              <ShieldAlert size={14}/> Reset ID to 001
-            </button>
-            <button onClick={wipeAllData} className="flex items-center gap-2 bg-red-950/30 border border-red-900 text-red-500 hover:bg-red-900 hover:text-white transition-all px-4 py-2 font-cinema tracking-widest text-[0.6rem] uppercase">
-              <Trash2 size={14}/> Wipe All (Reset DB)
-            </button>
           </div>
         </div>
 
@@ -385,19 +379,6 @@ export default function AdminPage() {
           </div>
         )}
       </AnimatePresence>
-
-      {/* Manual Purge Instructions (Visible only to Admin) */}
-      <div className="mt-12 p-8 border border-red-900/30 bg-red-950/10 max-w-lg">
-        <h3 className="font-cinema text-red-500 text-sm tracking-widest uppercase mb-4">Manual Purge Guide</h3>
-        <p className="font-script text-xs text-gray-400 leading-loose">
-          If the "Wipe All" button fails due to security rules, follow these 3 steps in your Firebase Console: <br />
-          1. Go to <span className="text-[var(--antique-gold)] underline">Firestore Database</span>. <br />
-          2. Locate the <span className="text-[var(--antique-gold)] underline">registrations</span> collection. <br />
-          3. Click the three dots (⋮) and select <span className="text-red-500 font-bold">Delete collection</span>. <br />
-          This is the only way to bypass the restricted web-SDK delete permissions.
-        </p>
-      </div>
-
     </div>
   );
 }

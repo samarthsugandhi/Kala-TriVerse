@@ -108,7 +108,7 @@ export default function Events() {
                   <div className="mt-4 inline-block bg-[rgba(212,175,55,0.05)] border border-[rgba(212,175,55,0.2)] px-4 py-2">
                     <p className="font-cinema text-[var(--antique-gold)] text-xs tracking-widest uppercase mb-1">Prize Pool</p>
                     <p className="font-script text-[var(--ivory)] text-xs">
-                      1st: ₹{ev.id === 'food' ? '1500' : '2500'} <span className="mx-2 text-[var(--antique-gold-soft)]">|</span> 2nd: ₹{ev.id === 'food' ? '1000' : '1500'}
+                      1st: ₹2500 <span className="mx-2 text-[var(--antique-gold-soft)]">|</span> 2nd: ₹1500
                     </p>
                   </div>
                 </div>

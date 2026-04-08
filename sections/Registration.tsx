@@ -3,7 +3,7 @@
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { db } from "@/firebase/config";
-import { onSnapshot, doc, addDoc, collection, serverTimestamp, getDocs, runTransaction } from "firebase/firestore";
+import { onSnapshot, doc, serverTimestamp, runTransaction } from "firebase/firestore";
 import { Plus, Minus, Lock } from "lucide-react";
 
 const EVENT_OPTIONS = [
@@ -76,6 +76,8 @@ export default function Registration() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [validationNotice, setValidationNotice] = useState("");
+  const [showValidationNotice, setShowValidationNotice] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [successTeamId, setSuccessTeamId] = useState("");
   const [successInfo, setSuccessInfo] = useState<{ id: string, name: string, act: string, date: string } | null>(null);
@@ -150,13 +152,49 @@ export default function Registration() {
 
   const usnRegex = /^[1-4][A-Z]{2}\d{2}[A-Z]{2}\d{3}$/i; // E.g. 2BA23IS001
 
+  const getFieldLabel = (key: string) => {
+    const labels: Record<string, string> = {
+      teamName: "Team Name",
+      act: "The Act",
+      leadName: "Lead Name",
+      usn: "Lead USN / CSN",
+      semester: "Lead Semester",
+      branch: "Lead Branch",
+      otherBranch: "Lead Branch (Others)",
+      email: "Lead Gmail ID",
+      phone: "Lead Phone Number",
+      hostelName: "Lead Hostel",
+    };
+
+    if (labels[key]) return labels[key];
+
+    const memberFieldMatch = key.match(/^member_(\d+)_(.+)$/);
+    if (!memberFieldMatch) return key;
+
+    const memberIndex = Number(memberFieldMatch[1]) + 1;
+    const memberField = memberFieldMatch[2];
+    const memberLabels: Record<string, string> = {
+      name: "Name",
+      usn: "USN / CSN",
+      semester: "Semester",
+      branch: "Branch",
+      otherBranch: "Branch (Others)",
+      email: "Gmail ID",
+      phone: "Phone Number",
+      hostelName: "Hostel",
+    };
+
+    return `Teammate ${memberIndex} ${memberLabels[memberField] || memberField}`;
+  };
+
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.teamName.trim()) e.teamName = "Team name required";
     if (!form.act) e.act = "Please select an act";
     if (!form.leadName.trim()) e.leadName = "Lead name required";
-    
-    if (!usnRegex.test(form.usn)) e.usn = "Invalid USN format (e.g. 2BA23IS001)";
+
+    if (!form.usn.trim()) e.usn = "USN / CSN is required";
+    else if (!usnRegex.test(form.usn.trim())) e.usn = "Invalid USN format (e.g. 2BA23IS001)";
     if (!form.semester) e.semester = "Select a semester";
     if (!form.branch.trim()) e.branch = "Branch is required";
     if (form.branch === "Others" && !form.otherBranch.trim()) e.otherBranch = "Please specify branch";
@@ -170,7 +208,8 @@ export default function Registration() {
 
     form.members.forEach((m, idx) => {
       if (!m.name.trim()) e[`member_${idx}_name`] = "Required";
-      if (!usnRegex.test(m.usn)) e[`member_${idx}_usn`] = "Invalid USN";
+      if (!m.usn.trim()) e[`member_${idx}_usn`] = "Required";
+      else if (!usnRegex.test(m.usn.trim())) e[`member_${idx}_usn`] = "Invalid USN";
       if (!m.semester) e[`member_${idx}_semester`] = "Required";
       if (!m.branch.trim()) e[`member_${idx}_branch`] = "Required";
       if (m.branch === "Others" && !m.otherBranch?.trim()) e[`member_${idx}_otherBranch`] = "Required";
@@ -213,7 +252,18 @@ export default function Registration() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      const firstMissingKey = Object.keys(errs).find((key) => {
+        const msg = errs[key].toLowerCase();
+        return msg.includes("required") || msg.includes("select");
+      });
+      if (firstMissingKey) {
+        setValidationNotice(`You have not filled this field: ${getFieldLabel(firstMissingKey)}.`);
+        setShowValidationNotice(true);
+      }
+      return;
+    }
     setStatus("loading");
     try {
       // Use a Firestore transaction to handle atomic increment of the Team ID
@@ -226,8 +276,16 @@ export default function Registration() {
         if (counterSnap.exists()) {
           nextCount = (counterSnap.data().registrationCount || 0) + 1;
         }
-        
-        const generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
+
+        let generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
+        let regRef = doc(db, "registrations", generatedId);
+        while (true) {
+          const existingWithId = await transaction.get(regRef);
+          if (!existingWithId.exists()) break;
+          nextCount += 1;
+          generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
+          regRef = doc(db, "registrations", generatedId);
+        }
         
         const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
         let eventDate = "April 2026";
@@ -235,17 +293,22 @@ export default function Registration() {
         else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
 
         const finalForm = { ...form };
+        finalForm.usn = finalForm.usn.trim().toUpperCase();
+        finalForm.phone = finalForm.phone.trim();
+        finalForm.email = finalForm.email.trim();
         if (finalForm.branch === "Others") finalForm.branch = finalForm.otherBranch;
         delete (finalForm as any).otherBranch;
         finalForm.members = finalForm.members.map(m => {
           const newM = { ...m };
+          newM.usn = newM.usn.trim().toUpperCase();
+          newM.phone = newM.phone.trim();
+          newM.email = newM.email.trim();
           if (newM.branch === "Others") newM.branch = newM.otherBranch || "Others";
           delete newM.otherBranch;
           return newM;
         });
 
         // Add the registration document
-        const regRef = doc(collection(db, "registrations"));
         transaction.set(regRef, { 
           ...finalForm, 
           teamId: generatedId, 
@@ -407,7 +470,7 @@ export default function Registration() {
                           {errors.act && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors.act}</p>}
                           {form.act === "food" && (
                             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[var(--antique-gold)] text-[0.6rem] mt-2 font-script italic tracking-wider">
-                              * Act V is limited to a maximum of 2 participants (Lead + 1 Teammate).
+                              * Act V-Cooking Without Fire is limited to a maximum of 2 participants (Lead + 1 Teammate).
                             </motion.p>
                           )}
                         </div>
@@ -595,6 +658,35 @@ export default function Registration() {
               )}
            </div>
         </motion.div>
+
+        <AnimatePresence>
+          {showValidationNotice && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[1000] bg-black/80 flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                className="w-full max-w-md bg-[#121212] border border-[rgba(212,175,55,0.25)] p-6 text-center shadow-2xl"
+              >
+                <p className="font-script text-[var(--ivory)] text-base leading-relaxed mb-6">
+                  {validationNotice}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowValidationNotice(false)}
+                  className="engraved-btn font-cinema tracking-widest uppercase px-8 py-3 text-xs"
+                >
+                  Got It
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
