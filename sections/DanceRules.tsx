@@ -40,6 +40,30 @@ const ACTS = [
     ],
     symbol: "🪘",
   },
+  {
+    id: "drama",
+    label: "Act IV: Skit / Drama",
+    subtitle: "Expression · Storytelling · Impact",
+    desc: "Masks fall and truth emerges. Command the stage, direct your peers, and emote stories that linger long after the final curtain.",
+    criteria: [
+      { title: "Acting", detail: "Voice modulation, expressions, and body language." },
+      { title: "Script", detail: "Originality, impact, and flow of the story." },
+      { title: "Direction", detail: "Use of stage, props, and overall coordination." }
+    ],
+    symbol: "🎭",
+  },
+  {
+    id: "food",
+    label: "Act V: Cooking without fire",
+    subtitle: "Flavor · Presentation · Innovation",
+    desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art. Note: Ingredients required for cooking must be brought entirely by yourselves as per your need. Usage of any fire, heaters, or open flames is strictly prohibited.",
+    criteria: [
+      { title: "Taste & Flavor", detail: "Balance of flavors and overall deliciousness without cooking." },
+      { title: "Presentation", detail: "Visual appeal, garnishing, and neatness." },
+      { title: "Innovation", detail: "Creativity of the recipe and use of ingredients." }
+    ],
+    symbol: "👨‍🍳",
+  },
 ];
 
 export default function DanceRules() {

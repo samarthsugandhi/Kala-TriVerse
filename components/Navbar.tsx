@@ -127,7 +127,7 @@ export default function Navbar() {
                   onClick={() => handleNav("#register")}
                   className="font-script italic text-xl text-[var(--royal-maroon)] hover:text-[var(--antique-gold)] transition-colors border-b border-transparent hover:border-[var(--antique-gold)] pb-1"
                 >
-                  Enter The Fest
+                  Register The Fest
                 </button>
               </motion.li>
             </ul>

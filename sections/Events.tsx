@@ -14,7 +14,7 @@ export default function Events() {
       title: "Dance Competition",
       subtitle: "The Canvas of Motion",
       desc: "Flowing rhythms cross three traditions: the divine geometry of Classical, the electric pulse of Western, and the earthy soul of Janapada (Folk).",
-      symbol: "💃",
+      symbol: "🪷",
       art: "bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.1),transparent_70%)]",
       delay: 0.2
     },
@@ -107,7 +107,9 @@ export default function Events() {
                   {/* Prize Info */}
                   <div className="mt-4 inline-block bg-[rgba(212,175,55,0.05)] border border-[rgba(212,175,55,0.2)] px-4 py-2">
                     <p className="font-cinema text-[var(--antique-gold)] text-xs tracking-widest uppercase mb-1">Prize Pool</p>
-                    <p className="font-script text-[var(--ivory)] text-xs">1st: ₹2500 <span className="mx-2 text-[var(--antique-gold-soft)]">|</span> 2nd: ₹1500</p>
+                    <p className="font-script text-[var(--ivory)] text-xs">
+                      1st: ₹{ev.id === 'food' ? '1500' : '2500'} <span className="mx-2 text-[var(--antique-gold-soft)]">|</span> 2nd: ₹{ev.id === 'food' ? '1000' : '1500'}
+                    </p>
                   </div>
                 </div>
 
@@ -117,7 +119,7 @@ export default function Events() {
                   whileHover={{ y: -2 }}
                 >
                   <button
-                    onClick={() => document.querySelector(ev.id === 'dance' ? '#rules' : '#about')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => document.querySelector('#rules')?.scrollIntoView({ behavior: 'smooth' })}
                     className="font-script italic text-xs text-[var(--antique-gold-soft)] hover:text-[var(--ivory)] flex items-center gap-2 transition-colors uppercase tracking-[0.2em]"
                   >
                     View Details <ArrowRight size={14} />

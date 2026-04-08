@@ -135,7 +135,7 @@ export default function Hero() {
             onClick={() => document.querySelector("#register")?.scrollIntoView({ behavior: "smooth" })}
             className="engraved-btn font-cinema tracking-widest uppercase px-12 py-4 text-sm"
           >
-            Take the Stage
+            Register Now
           </button>
           
           <button
