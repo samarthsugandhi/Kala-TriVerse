@@ -39,7 +39,7 @@ export default function Results() {
       const data: Winner[] = [];
       snap.forEach(doc => {
         const d = doc.data();
-        if (d.placement) {
+        if (d.placement && !d.isDeleted) {
           data.push({ id: doc.id, teamName: d.teamName, act: d.act, leadName: d.leadName, placement: d.placement });
         }
       });

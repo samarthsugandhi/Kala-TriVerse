@@ -3,7 +3,8 @@
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { db } from "@/firebase/config";
-import { onSnapshot, doc, serverTimestamp, runTransaction } from "firebase/firestore";
+import { onSnapshot, doc } from "firebase/firestore";
+import { createRegistrationWithGeneratedId } from "@/firebase/registrationService";
 import { Plus, Minus, Lock } from "lucide-react";
 
 const EVENT_OPTIONS = [
@@ -266,57 +267,29 @@ export default function Registration() {
     }
     setStatus("loading");
     try {
-      // Use a Firestore transaction to handle atomic increment of the Team ID
-      const counterRef = doc(db, "settings", "counters");
-      
-      const result = await runTransaction(db, async (transaction) => {
-        let nextCount = 1;
+      const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
+      let eventDate = "April 2026";
+      if (form.act === "food") eventDate = "11th April 2026";
+      else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
 
-        let generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
-        let regRef = doc(db, "registrations", generatedId);
-        while (true) {
-          const existingWithId = await transaction.get(regRef);
-          if (!existingWithId.exists()) break;
-          nextCount += 1;
-          generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
-          regRef = doc(db, "registrations", generatedId);
-        }
-        
-        const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
-        let eventDate = "April 2026";
-        if (form.act === "food") eventDate = "11th April 2026";
-        else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
-
-        const finalForm = { ...form };
-        finalForm.usn = finalForm.usn.trim().toUpperCase();
-        finalForm.phone = finalForm.phone.trim();
-        finalForm.email = finalForm.email.trim();
-        if (finalForm.branch === "Others") finalForm.branch = finalForm.otherBranch;
-        delete (finalForm as any).otherBranch;
-        finalForm.members = finalForm.members.map(m => {
-          const newM = { ...m };
-          newM.usn = newM.usn.trim().toUpperCase();
-          newM.phone = newM.phone.trim();
-          newM.email = newM.email.trim();
-          if (newM.branch === "Others") newM.branch = newM.otherBranch || "Others";
-          delete newM.otherBranch;
-          return newM;
-        });
-
-        // Add the registration document
-        transaction.set(regRef, { 
-          ...finalForm, 
-          teamId: generatedId, 
-          createdAt: serverTimestamp() 
-        });
-
-        // Update the counter
-        transaction.set(counterRef, { registrationCount: nextCount }, { merge: true });
-
-        return { generatedId, eventDetails, eventDate };
+      const finalForm = { ...form };
+      finalForm.usn = finalForm.usn.trim().toUpperCase();
+      finalForm.phone = finalForm.phone.trim();
+      finalForm.email = finalForm.email.trim();
+      if (finalForm.branch === "Others") finalForm.branch = finalForm.otherBranch;
+      delete (finalForm as any).otherBranch;
+      finalForm.members = finalForm.members.map(m => {
+        const newM = { ...m };
+        newM.usn = newM.usn.trim().toUpperCase();
+        newM.phone = newM.phone.trim();
+        newM.email = newM.email.trim();
+        if (newM.branch === "Others") newM.branch = newM.otherBranch || "Others";
+        delete newM.otherBranch;
+        return newM;
       });
 
-      const { generatedId, eventDetails, eventDate } = result;
+      const generatedId = await createRegistrationWithGeneratedId(db, finalForm, "public");
+
       const info = { id: generatedId, name: form.teamName, act: eventDetails, date: eventDate };
       setSuccessTeamId(generatedId);
       setSuccessInfo(info);
@@ -327,6 +300,11 @@ export default function Registration() {
       setTimeout(() => downloadPass(info), 500);
     } catch (err) {
       console.error("Submission error:", err);
+      const errorCode = (err as any)?.code || "";
+      if (errorCode === "permission-denied" || errorCode === "unavailable" || errorCode === "deadline-exceeded") {
+        setValidationNotice("Registration could not reach the database. Please try another network or disable VPN/ad-blocking, then submit again.");
+        setShowValidationNotice(true);
+      }
       setStatus("error");
     }
   };

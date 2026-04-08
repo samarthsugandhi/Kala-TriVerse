@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase/config";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { collection, onSnapshot, doc, deleteDoc, setDoc, updateDoc, query, orderBy, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, updateDoc, query, orderBy, serverTimestamp } from "firebase/firestore";
+import {
+  createRegistrationWithGeneratedId,
+  restoreRegistration,
+  softDeleteRegistration,
+} from "@/firebase/registrationService";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,7 +40,11 @@ interface Registration {
   hostelName: string;
   members: Member[];
   placement?: string;
+  isDeleted?: boolean;
+  deletedAt?: any;
+  deletedBy?: string | null;
   createdAt: any;
+  updatedAt?: any;
 }
 
 export default function AdminPage() {
@@ -49,6 +58,7 @@ export default function AdminPage() {
   const [awardsReleased, setAwardsReleased] = useState(false);
   
   const [filterAct, setFilterAct] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"active" | "deleted" | "all">("active");
   const [searchTerm, setSearchTerm] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -99,15 +109,19 @@ export default function AdminPage() {
     await setDoc(doc(db, "settings", "general"), { isAwardsAnnounced: !awardsReleased }, { merge: true });
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Permanently delete this team's registration?")) {
-      await deleteDoc(doc(db, "registrations", id));
-    }
+  const handleSoftDelete = async (teamId: string) => {
+    if (!confirm("Move this team to deleted state?")) return;
+    await softDeleteRegistration(db, teamId, user?.email || "admin");
+  };
+
+  const handleRestore = async (teamId: string) => {
+    if (!confirm("Restore this deleted team?")) return;
+    await restoreRegistration(db, teamId, user?.email || "admin");
   };
 
   const openAddModal = () => {
     setEditId(null);
-    setFormData({ teamName: "", act: "", leadName: "", usn: "", email: "", phone: "", branch: "", semester: "", stay: "local", hostelName: "", members: [] });
+    setFormData({ teamName: "", act: "", leadName: "", usn: "", email: "", phone: "", branch: "", semester: "", stay: "local", hostelName: "", members: [], isDeleted: false, deletedAt: null, deletedBy: null });
     setModalOpen(true);
   };
 
@@ -117,36 +131,30 @@ export default function AdminPage() {
     setModalOpen(true);
   };
 
-  const getNextTeamId = () => {
-    const usedNumbers = new Set(
-      registrations
-        .map((r) => {
-          const numericPart = r.teamId?.split("-").pop();
-          const parsed = Number(numericPart);
-          return Number.isFinite(parsed) ? parsed : null;
-        })
-        .filter((n): n is number => n !== null)
-    );
-
-    let next = 1;
-    while (usedNumbers.has(next)) next += 1;
-    return `IS-KT-${next.toString().padStart(3, "0")}`;
-  };
-
   const handleModalSave = async () => {
     if (!formData.teamName || !formData.act || !formData.leadName) return alert("Missing required fields: Team Name, Act, Lead Name");
     try {
       if (editId) {
+        const { id, createdAt, deletedAt, ...safePayload } = formData as Registration;
         await updateDoc(doc(db, "registrations", editId), {
-          ...formData,
-          teamId: formData.teamId || getNextTeamId(),
+          ...safePayload,
+          updatedAt: serverTimestamp(),
         });
       } else {
-        await addDoc(collection(db, "registrations"), {
-          ...formData,
-          teamId: getNextTeamId(),
-          createdAt: serverTimestamp(),
-        });
+        await createRegistrationWithGeneratedId(db, {
+          teamName: String(formData.teamName || "").trim(),
+          act: String(formData.act || "").trim(),
+          leadName: String(formData.leadName || "").trim(),
+          usn: String(formData.usn || "").trim().toUpperCase(),
+          semester: String(formData.semester || "").trim(),
+          branch: String(formData.branch || "").trim(),
+          email: String(formData.email || "").trim(),
+          phone: String(formData.phone || "").trim(),
+          stay: String(formData.stay || "local").trim(),
+          hostelName: String(formData.hostelName || "").trim(),
+          members: formData.members || [],
+          placement: formData.placement || "",
+        }, user?.email || "admin");
       }
       setModalOpen(false);
     } catch (err) {
@@ -191,6 +199,13 @@ export default function AdminPage() {
   };
 
   const filtered = registrations.filter(r => {
+    const isDeleted = !!r.isDeleted;
+    const matchStatus = filterStatus === "all"
+      ? true
+      : filterStatus === "deleted"
+      ? isDeleted
+      : !isDeleted;
+
     const matchAct = filterAct ? r.act === filterAct : true;
     const search = searchTerm.toLowerCase();
     const matchSearch = !search || (
@@ -205,7 +220,7 @@ export default function AdminPage() {
         (m.branch?.toLowerCase() || "").includes(search)
       )
     );
-    return matchAct && matchSearch;
+    return matchStatus && matchAct && matchSearch;
   });
 
   if (!user) {
@@ -270,6 +285,11 @@ export default function AdminPage() {
               <option value="drama">Drama</option>
               <option value="food">Culinary</option>
             </select>
+            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as "active" | "deleted" | "all")} className="input-royal px-4 py-2 text-sm bg-[#111]">
+              <option value="active">Active Teams</option>
+              <option value="deleted">Deleted Teams</option>
+              <option value="all">All Teams</option>
+            </select>
           </div>
           
           <div className="flex gap-4">
@@ -301,9 +321,14 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {filtered.map(r => (
-                <tr key={r.id} className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(212,175,55,0.02)] transition-colors">
+                <tr key={r.id} className={`border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(212,175,55,0.02)] transition-colors ${r.isDeleted ? "opacity-60 bg-[rgba(128,0,0,0.08)]" : ""}`}>
                   <td className="p-4 font-bold text-[var(--antique-gold-soft)] whitespace-nowrap">{r.teamId || "-"}</td>
-                  <td className="p-4 font-bold text-[var(--ivory)] whitespace-nowrap">{r.teamName}</td>
+                  <td className="p-4 font-bold text-[var(--ivory)] whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span>{r.teamName}</span>
+                      {r.isDeleted && <span className="text-[10px] uppercase tracking-wider px-2 py-1 border border-red-500 text-red-400">Deleted</span>}
+                    </div>
+                  </td>
                   <td className="p-4 whitespace-nowrap">
                     <span className="bg-[rgba(128,0,0,0.3)] text-[var(--ivory-muted)] px-2 py-1 text-xs uppercase tracking-wider border border-[rgba(128,0,0,0.5)]">{r.act}</span>
                   </td>
@@ -328,6 +353,7 @@ export default function AdminPage() {
                     <select 
                       value={r.placement || ""} 
                       onChange={(e) => updatePlacement(r.id, e.target.value)}
+                      disabled={!!r.isDeleted}
                       className={`text-xs bg-black p-1 border font-cinema ${r.placement ? 'border-[var(--antique-gold)] text-[var(--antique-gold)]' : 'border-[rgba(255,255,255,0.1)] text-gray-500'}`}
                     >
                       <option value="">Unranked</option>
@@ -337,8 +363,16 @@ export default function AdminPage() {
                     </select>
                   </td>
                   <td className="p-4 flex gap-3 justify-end items-center">
-                    <button onClick={() => openEditModal(r)} className="text-[var(--antique-gold)] hover:text-white"><Edit size={16}/></button>
-                    <button onClick={() => handleDelete(r.id)} className="text-[var(--royal-maroon)] hover:text-red-500"><Trash2 size={16}/></button>
+                    {!r.isDeleted ? (
+                      <>
+                        <button onClick={() => openEditModal(r)} className="text-[var(--antique-gold)] hover:text-white"><Edit size={16}/></button>
+                        <button onClick={() => handleSoftDelete(r.id)} className="text-[var(--royal-maroon)] hover:text-red-500" title="Soft Delete"><Trash2 size={16}/></button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => handleRestore(r.id)} className="text-green-400 hover:text-green-300 text-xs uppercase tracking-widest font-cinema">Restore</button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -361,6 +395,16 @@ export default function AdminPage() {
               <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-[var(--antique-gold-soft)] hover:text-white"><X size={24}/></button>
               
               <h2 className="font-cinema text-2xl text-[var(--ivory)] uppercase tracking-widest mb-6">Database Override</h2>
+
+              {editId ? (
+                <p className="text-xs font-cinema tracking-widest text-[var(--antique-gold-soft)] mb-4 uppercase">
+                  Team ID (Immutable): {formData.teamId || editId}
+                </p>
+              ) : (
+                <p className="text-xs font-cinema tracking-widest text-[var(--antique-gold-soft)] mb-4 uppercase">
+                  Team ID will be auto-generated (Never Reused)
+                </p>
+              )}
               
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div><label className="text-xs text-[var(--antique-gold-dim)] uppercase">Team Name</label><input className="w-full input-royal px-3 py-2 bg-black text-white" value={formData.teamName} onChange={e => setFormData({...formData, teamName: e.target.value})} /></div>
