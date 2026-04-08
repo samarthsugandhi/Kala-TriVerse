@@ -3,14 +3,17 @@ import {
   addDoc,
   collection,
   doc,
+  getDocs,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 
 export const TEAM_ID_PREFIX = "IS-KT";
 const MAX_WRITE_RETRIES = 4;
-const TEAM_ID_SLICE_LENGTH = 6;
+const TEAM_ID_SUFFIX_LENGTH = 3;
 
 export type AuditAction = "CREATE_TEAM" | "DELETE_TEAM" | "RESTORE_TEAM";
 
@@ -76,13 +79,55 @@ const withRetry = async <T>(
 };
 
 /**
+ * Get the next sequential Team ID by querying existing registrations.
+ * Reads all registrations, finds the highest IS-KT-XXX number, and returns next.
+ * Example: If IS-KT-042 exists, returns IS-KT-043
+ */
+export const getNextSequentialTeamId = async (
+  db: Firestore,
+  prefix = TEAM_ID_PREFIX
+): Promise<string> => {
+  try {
+    const regsSnapshot = await getDocs(collection(db, "registrations"));
+    
+    let maxNumber = 0;
+    regsSnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const teamId = data?.teamId;
+      
+      if (teamId && typeof teamId === "string" && teamId.startsWith(prefix)) {
+        const suffix = teamId.substring(prefix.length + 1);
+        const num = parseInt(suffix, 10);
+        
+        if (!isNaN(num) && num > maxNumber) {
+          maxNumber = num;
+        }
+      }
+    });
+    
+    const nextNumber = maxNumber + 1;
+    const suffix = String(nextNumber).padStart(TEAM_ID_SUFFIX_LENGTH, "0");
+    return `${prefix}-${suffix}`;
+  } catch (error) {
+    console.warn("Failed to get next sequential ID, falling back to 001", error);
+    return `${prefix}-001`;
+  }
+};
+
+/**
  * Derive a human-readable Team ID from Firestore auto document ID.
- * Example: aB3xYz9kLm -> IS-KT-AB3XYZ
+ * Example: aB3xYz9kLm -> IS-KT-042781
  */
 export const generateTeamIdFromDocId = (docId: string, prefix = TEAM_ID_PREFIX) => {
   const compact = (docId || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-  const slice = compact.slice(0, TEAM_ID_SLICE_LENGTH);
-  return `${prefix}-${slice || "UNKNOWN"}`;
+  let rolling = 0;
+
+  for (let index = 0; index < compact.length; index += 1) {
+    rolling = (rolling * 36 + compact.charCodeAt(index)) % 1_000_000;
+  }
+
+  const suffix = String(rolling).padStart(TEAM_ID_SUFFIX_LENGTH, "0");
+  return `${prefix}-${suffix}`;
 };
 
 export const appendAuditLog = async (
@@ -105,7 +150,7 @@ export const createRegistrationWithGeneratedId = async (
   performedBy = "public"
 ): Promise<string> => {
   const regRef = doc(collection(db, "registrations"));
-  const teamId = generateTeamIdFromDocId(regRef.id);
+  const teamId = await getNextSequentialTeamId(db);
 
   await withRetry(
     () =>
