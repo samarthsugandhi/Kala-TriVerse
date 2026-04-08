@@ -56,7 +56,7 @@ const ACTS = [
     id: "food",
     label: "Act V: Cooking without fire",
     subtitle: "Flavor · Presentation · Innovation",
-    desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art. Note: Ingredients required for cooking must be brought entirely by yourselves as per your need. Usage of any fire, heaters, or open flames is strictly prohibited.",
+    desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art. Team Size: Max 2 members (Solo or Duo entries allowed). Note: Ingredients required for cooking must be brought entirely by yourselves as per your need. Usage of any fire, heaters, or open flames is strictly prohibited.",
     criteria: [
       { title: "Taste & Flavor", detail: "Balance of flavors and overall deliciousness without cooking." },
       { title: "Presentation", detail: "Visual appeal, garnishing, and neatness." },

@@ -3,7 +3,7 @@
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { db } from "@/firebase/config";
-import { onSnapshot, doc, addDoc, collection, serverTimestamp, getDocs } from "firebase/firestore";
+import { onSnapshot, doc, addDoc, collection, serverTimestamp, getDocs, runTransaction } from "firebase/firestore";
 import { Plus, Minus, Lock } from "lucide-react";
 
 const EVENT_OPTIONS = [
@@ -57,6 +57,8 @@ export default function Registration() {
     });
     return () => unsub();
   }, []);
+
+
 
   const [form, setForm] = useState({
     teamName: "",
@@ -214,26 +216,49 @@ export default function Registration() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setStatus("loading");
     try {
-      const snap = await getDocs(collection(db, "registrations"));
-      const count = snap.size + 1;
-      const generatedId = `IS-KT-${count.toString().padStart(3, '0')}`;
+      // Use a Firestore transaction to handle atomic increment of the Team ID
+      const counterRef = doc(db, "settings", "counters");
       
-      const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
-      let eventDate = "April 2026";
-      if (form.act === "food") eventDate = "11th April 2026";
-      else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
+      const result = await runTransaction(db, async (transaction) => {
+        const counterSnap = await transaction.get(counterRef);
+        let nextCount = 1;
+        
+        if (counterSnap.exists()) {
+          nextCount = (counterSnap.data().registrationCount || 0) + 1;
+        }
+        
+        const generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
+        
+        const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
+        let eventDate = "April 2026";
+        if (form.act === "food") eventDate = "11th April 2026";
+        else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
 
-      const finalForm = { ...form };
-      if (finalForm.branch === "Others") finalForm.branch = finalForm.otherBranch;
-      delete (finalForm as any).otherBranch;
-      finalForm.members = finalForm.members.map(m => {
-        const newM = { ...m };
-        if (newM.branch === "Others") newM.branch = newM.otherBranch || "Others";
-        delete newM.otherBranch;
-        return newM;
+        const finalForm = { ...form };
+        if (finalForm.branch === "Others") finalForm.branch = finalForm.otherBranch;
+        delete (finalForm as any).otherBranch;
+        finalForm.members = finalForm.members.map(m => {
+          const newM = { ...m };
+          if (newM.branch === "Others") newM.branch = newM.otherBranch || "Others";
+          delete newM.otherBranch;
+          return newM;
+        });
+
+        // Add the registration document
+        const regRef = doc(collection(db, "registrations"));
+        transaction.set(regRef, { 
+          ...finalForm, 
+          teamId: generatedId, 
+          createdAt: serverTimestamp() 
+        });
+
+        // Update the counter
+        transaction.set(counterRef, { registrationCount: nextCount }, { merge: true });
+
+        return { generatedId, eventDetails, eventDate };
       });
 
-      await addDoc(collection(db, "registrations"), { ...finalForm, teamId: generatedId, createdAt: serverTimestamp() });
+      const { generatedId, eventDetails, eventDate } = result;
       const info = { id: generatedId, name: form.teamName, act: eventDetails, date: eventDate };
       setSuccessTeamId(generatedId);
       setSuccessInfo(info);
@@ -242,7 +267,8 @@ export default function Registration() {
       
       // Auto-download logic
       setTimeout(() => downloadPass(info), 500);
-    } catch {
+    } catch (err) {
+      console.error("Submission error:", err);
       setStatus("error");
     }
   };
@@ -379,6 +405,11 @@ export default function Registration() {
                             {EVENT_OPTIONS.map((o) => <option key={o.value} value={o.value} className="bg-[#1A1A1A]">{o.label}</option>)}
                           </select>
                           {errors.act && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors.act}</p>}
+                          {form.act === "food" && (
+                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[var(--antique-gold)] text-[0.6rem] mt-2 font-script italic tracking-wider">
+                              * Act V is limited to a maximum of 2 participants (Lead + 1 Teammate).
+                            </motion.p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -534,9 +565,15 @@ export default function Registration() {
                         <p className="text-[var(--ivory-dim)] font-script italic text-sm opacity-50 text-center py-4 border border-dashed border-[rgba(212,175,55,0.2)] mb-4">No additional members added. (Solo Act)</p>
                       )}
                       
-                      <button type="button" onClick={addMember} className="flex mx-auto items-center gap-2 font-script italic text-sm text-[var(--antique-gold)] hover:text-[var(--ivory)] transition-colors border border-[rgba(212,175,55,0.4)] px-6 py-3 bg-[rgba(212,175,55,0.05)] mt-4">
-                        <Plus size={16}/> <span>Add Teammate</span>
-                      </button>
+                      {(form.act !== "food" || form.members.length < 1) ? (
+                        <button type="button" onClick={addMember} className="flex mx-auto items-center gap-2 font-script italic text-sm text-[var(--antique-gold)] hover:text-[var(--ivory)] transition-colors border border-[rgba(212,175,55,0.4)] px-6 py-3 bg-[rgba(212,175,55,0.05)] mt-4">
+                          <Plus size={16}/> <span>Add Teammate</span>
+                        </button>
+                      ) : (
+                        <p className="text-center text-[var(--antique-gold-dim)] font-script italic text-xs mt-6 opacity-60">
+                          Maximum team size reached for Act V.
+                        </p>
+                      )}
                     </div>
 
                     {status === "error" && (
