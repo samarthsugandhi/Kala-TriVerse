@@ -270,12 +270,7 @@ export default function Registration() {
       const counterRef = doc(db, "settings", "counters");
       
       const result = await runTransaction(db, async (transaction) => {
-        const counterSnap = await transaction.get(counterRef);
         let nextCount = 1;
-        
-        if (counterSnap.exists()) {
-          nextCount = (counterSnap.data().registrationCount || 0) + 1;
-        }
 
         let generatedId = `IS-KT-${nextCount.toString().padStart(3, '0')}`;
         let regRef = doc(db, "registrations", generatedId);

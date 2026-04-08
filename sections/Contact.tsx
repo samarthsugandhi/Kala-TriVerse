@@ -3,6 +3,22 @@
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 
+const InstagramIcon = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    className={className}
+  >
+    <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="2" />
+    <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+    <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+  </svg>
+);
+
 export default function Contact() {
   return (
     <section id="contact" className="py-32 px-4 flex justify-center relative bg-[var(--bg-charcoal)]">
@@ -63,7 +79,7 @@ export default function Contact() {
                   <span className="font-script italic text-sm">iserise12@gmail.com</span>
                 </a>
                 <a href="https://www.instagram.com/bec_ise_rise" target="_blank" rel="noreferrer" className="group flex items-center gap-2 text-[var(--ivory-muted)] hover:text-[var(--antique-gold)] transition-colors">
-                  <span className="text-[var(--royal-maroon)] group-hover:text-[var(--antique-gold)] transition-colors">📸</span> 
+                  <InstagramIcon size={16} className="text-[var(--royal-maroon)] group-hover:text-[var(--antique-gold)] transition-colors" />
                   <span className="font-script italic text-sm">@bec_ise_rise</span>
                 </a>
               </div>

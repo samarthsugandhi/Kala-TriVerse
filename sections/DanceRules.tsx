@@ -154,6 +154,16 @@ export default function DanceRules() {
                 {current.desc}
               </p>
 
+              {[
+                "classical",
+                "western",
+                "folk",
+              ].includes(current.id) && (
+                <p className="font-script italic text-[var(--antique-gold)] text-sm max-w-2xl leading-relaxed mb-10 border border-[rgba(212,175,55,0.2)] bg-[rgba(212,175,55,0.05)] px-4 py-3">
+                  Guideline: For all dance categories (Act I, Act II, and Act III), the submitted performance track must be within a maximum duration of 4 minutes.
+                </p>
+              )}
+
               {/* Judgment Criteria */}
               <div className="w-full text-left">
                 <p className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-6 text-center">
