@@ -13,7 +13,7 @@ const EVENT_OPTIONS = [
   { value: "western", label: "Act II: Western Dance" },
   { value: "folk", label: "Act III: Janapada Folk" },
   { value: "drama", label: "Act IV: Drama / Skit" },
-  { value: "food", label: "Act V: Cooking without Fire" },
+  { value: "food", label: "Act V: Cooking" },
 ];
 
 const SEMESTER_OPTIONS = [
@@ -443,7 +443,7 @@ export default function Registration() {
                           {errors.act && <p className="text-[var(--royal-maroon)] text-xs mt-1 font-script italic">{errors.act}</p>}
                           {form.act === "food" && (
                             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[var(--antique-gold)] text-[0.6rem] mt-2 font-script italic tracking-wider">
-                              * Act V-Cooking Without Fire is limited to a maximum of 2 participants (Lead + 1 Teammate).
+                              * Act V - Cooking is limited to a maximum of 2 participants (Lead + 1 Teammate).
                             </motion.p>
                           )}
                         </div>
