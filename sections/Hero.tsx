@@ -1,37 +1,60 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Hero() {
   const [mounted, setMounted] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [useSpotlight, setUseSpotlight] = useState(false);
+
+  const x = useMotionValue(-300);
+  const y = useMotionValue(-300);
+  const smoothX = useSpring(x, { stiffness: 260, damping: 28, mass: 0.45 });
+  const smoothY = useSpring(y, { stiffness: 260, damping: 28, mass: 0.45 });
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 10 }, () => ({
+        size: Math.random() * 2 + 1,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        duration: Math.random() * 7 + 8,
+        delay: Math.random() * 4,
+      })),
+    []
+  );
 
   useEffect(() => {
     setMounted(true);
-    
-    // Custom soft spotlight tracking cursor
+
+    const canUseSpotlight =
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setUseSpotlight(canUseSpotlight);
+    if (!canUseSpotlight) return;
+
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      x.set(e.clientX - 300);
+      y.set(e.clientY - 300);
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [x, y]);
 
   return (
     <section
       id="home"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-24 section-shell"
       style={{ backgroundColor: "var(--bg-charcoal)" }}
     >
       {/* Dynamic Cursor Spotlight Effect */}
-      {mounted && (
+      {mounted && useSpotlight && (
         <motion.div
-          className="pointer-events-none fixed z-0 transition-opacity duration-1000"
-          animate={{ x: mousePos.x - 300, y: mousePos.y - 300 }}
-          transition={{ type: "tween", ease: "linear", duration: 0.1 }}
+          className="pointer-events-none fixed z-0 hidden md:block will-change-transform"
           style={{
+            x: smoothX,
+            y: smoothY,
             width: "600px",
             height: "600px",
             background: "radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0) 60%)",
@@ -46,31 +69,38 @@ export default function Hero() {
       
       {/* Subtle floating particles (dust in spotlight) */}
       <div className="absolute inset-0 z-0 overflow-hidden opacity-30 pointer-events-none hidden md:block">
-        {[...Array(15)].map((_, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-[var(--ivory)] blur-[1px]"
             style={{
-              width: Math.random() * 3 + 1 + "px",
-              height: Math.random() * 3 + 1 + "px",
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              left: p.left,
+              top: p.top,
             }}
             animate={{
-              y: [0, -100, 0],
-              opacity: [0, 0.6, 0],
+              y: [0, -70, 0],
+              opacity: [0, 0.45, 0],
             }}
             transition={{
-              duration: Math.random() * 10 + 10,
+              duration: p.duration,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: Math.random() * 5,
+              delay: p.delay,
             }}
           />
         ))}
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl mx-auto w-full">
+
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <span className="chip">22 April 2026</span>
+          <span className="chip">Two Venues</span>
+          <span className="chip">Three Acts</span>
+          <span className="chip">Open to Students</span>
+        </div>
         
         {/* Subtle top indicator */}
         <motion.div
@@ -124,6 +154,25 @@ export default function Hero() {
           Step inside the art of Dance, Drama, and Culinary Expression.
         </motion.p>
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 2.0 }}
+          className="premium-card-soft rounded-2xl px-6 py-4 mb-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left w-full max-w-3xl"
+        >
+          {[
+            { label: "Cooking", value: "12:30 PM", detail: "MBA Open Quadrangle" },
+            { label: "Dance + Drama", value: "5:30 PM", detail: "Gallery Hall, BEC" },
+            { label: "Registration", value: "Open", detail: "Join the stage" },
+          ].map((item) => (
+            <div key={item.label} className="sm:border-r sm:border-[rgba(212,175,55,0.12)] last:border-r-0 pr-0 sm:pr-4">
+              <p className="font-script text-[var(--antique-gold-soft)] uppercase tracking-[0.25em] text-[0.65rem] mb-1">{item.label}</p>
+              <p className="font-cinema text-[var(--ivory)] text-lg tracking-wide mb-1">{item.value}</p>
+              <p className="font-script text-[var(--ivory-dim)] text-xs">{item.detail}</p>
+            </div>
+          ))}
+        </motion.div>
+
         {/* Buttons */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -133,14 +182,14 @@ export default function Hero() {
         >
           <button
             onClick={() => document.querySelector("#register")?.scrollIntoView({ behavior: "smooth" })}
-            className="engraved-btn font-cinema tracking-widest uppercase px-12 py-4 text-sm"
+            className="engraved-btn font-cinema tracking-widest uppercase px-12 py-4 text-sm rounded-full"
           >
             Register Now
           </button>
           
           <button
             onClick={() => document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" })}
-            className="group font-script italic tracking-wider text-[var(--ivory-muted)] hover:text-[var(--antique-gold)] transition-colors px-12 py-4 flex items-center justify-center gap-3"
+            className="group ghost-btn rounded-full font-script italic tracking-wider text-[var(--ivory-muted)] hover:text-[var(--antique-gold)] transition-colors px-12 py-4 flex items-center justify-center gap-3"
           >
             Read the Script
             <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />

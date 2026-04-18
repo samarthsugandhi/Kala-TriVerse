@@ -35,7 +35,7 @@ export default function Schedule() {
   const inView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section id="schedule" className="py-32 px-4 relative flex justify-center bg-[#0C0C0C]">
+    <section id="schedule" className="section-shell-tight px-4 relative flex justify-center bg-[#0C0C0C]">
       
       {/* Background script texture overlay */}
       <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: "repeating-linear-gradient(45deg, var(--antique-gold) 0, transparent 1px, transparent 100px, var(--antique-gold) 100px)" }} />
@@ -48,7 +48,7 @@ export default function Schedule() {
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 1 }}
-            className="font-script text-[var(--antique-gold-soft)] text-sm tracking-[0.4em] uppercase mb-4"
+            className="section-kicker mb-4"
           >
             The Evening's Program
           </motion.p>
@@ -56,7 +56,7 @@ export default function Schedule() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="font-cinema text-4xl text-[var(--ivory)] tracking-widest uppercase drop-shadow-xl"
+            className="section-title text-4xl drop-shadow-xl"
           >
             Order of Events
           </motion.h2>
@@ -94,7 +94,7 @@ export default function Schedule() {
                 <div className="hidden md:block w-5/12" />
 
                 {/* Content Card */}
-                <div className={`w-full md:w-5/12 ml-8 md:ml-0 ${isEven ? "md:text-right" : "md:text-left"}`}>
+                <div className={`premium-card rounded-[1.5rem] w-full md:w-5/12 ml-8 md:ml-0 px-6 py-6 ${isEven ? "md:text-right" : "md:text-left"}`}>
                   
                   <p className="font-script italic text-[var(--antique-gold)] text-sm tracking-widest mb-1">
                     {item.act}
@@ -104,7 +104,7 @@ export default function Schedule() {
                     {item.title}
                   </h3>
                   
-                  <span className="inline-block py-1 px-3 border border-[rgba(212,175,55,0.3)] bg-[rgba(128,0,0,0.1)] font-cinema text-[0.65rem] text-[var(--ivory-dim)] uppercase tracking-[0.2em] mb-4">
+                  <span className="inline-block py-1 px-3 border border-[rgba(212,175,55,0.3)] bg-[rgba(128,0,0,0.1)] font-cinema text-[0.65rem] text-[var(--ivory-dim)] uppercase tracking-[0.2em] mb-4 rounded-full">
                     {item.time}
                   </span>
                   

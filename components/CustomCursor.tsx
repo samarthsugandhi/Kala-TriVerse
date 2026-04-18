@@ -1,19 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function CustomCursor() {
-  const [pos, setPos] = useState({ x: -100, y: -100 });
+  const [enabled, setEnabled] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [hovering, setHovering] = useState(false);
 
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const smoothX = useSpring(x, { stiffness: 520, damping: 34, mass: 0.35 });
+  const smoothY = useSpring(y, { stiffness: 520, damping: 34, mass: 0.35 });
+
   useEffect(() => {
-    // Only mount custom tracking on non-touch devices
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!isFinePointer || prefersReducedMotion) return;
+
+    setEnabled(true);
 
     const move = (e: MouseEvent) => {
-      setPos({ x: e.clientX, y: e.clientY });
+      x.set(e.clientX - 16);
+      y.set(e.clientY - 16);
       
       // Determine if hovering over clickable elements
       const target = e.target as HTMLElement;
@@ -37,14 +46,14 @@ export default function CustomCursor() {
     window.addEventListener("mouseup", up);
     
     return () => {
+      setEnabled(false);
       window.removeEventListener("mousemove", move);
       window.removeEventListener("mousedown", down);
       window.removeEventListener("mouseup", up);
     };
-  }, []);
+  }, [x, y]);
 
-  // Hide entirely if we are off screen
-  if (pos.x === -100) return null;
+  if (!enabled) return null;
 
   return (
     <>
@@ -54,14 +63,10 @@ export default function CustomCursor() {
         }
       `}} />
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[999999] hidden md:flex items-center justify-center mix-blend-difference"
-        animate={{ 
-          x: pos.x - 16, 
-          y: pos.y - 16, 
-          scale: clicked ? 0.8 : hovering ? 1.5 : 1
-        }}
-        transition={{ type: "tween", ease: "backOut", duration: 0.15 }}
-        style={{ width: "32px", height: "32px" }}
+        className="fixed top-0 left-0 pointer-events-none z-[999999] hidden md:flex items-center justify-center mix-blend-difference will-change-transform"
+        style={{ x: smoothX, y: smoothY, width: "32px", height: "32px" }}
+        animate={{ scale: clicked ? 0.88 : hovering ? 1.35 : 1 }}
+        transition={{ type: "spring", stiffness: 420, damping: 26 }}
       >
         {/* Outer Ring */}
         <div className="w-full h-full rounded-full border-[1.5px] border-[#FFF5E1] flex items-center justify-center backdrop-blur-sm transition-colors duration-300"

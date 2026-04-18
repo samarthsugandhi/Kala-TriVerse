@@ -308,17 +308,17 @@ export default function Registration() {
   };
 
   return (
-    <section id="register" className="py-32 px-4 relative flex justify-center">
+    <section id="register" className="section-shell relative flex justify-center">
       <div className="absolute inset-x-0 w-full h-[1px] top-0 bg-gradient-to-r from-transparent via-[rgba(212,175,55,0.2)] to-transparent" />
 
       <div className="max-w-4xl w-full relative z-10" ref={ref}>
         {/* Header */}
         <div className="text-center mb-16">
-           <motion.h2
+          <motion.h2
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="font-cinema text-4xl md:text-5xl text-[var(--ivory)] tracking-widest uppercase mb-4"
+            className="section-title text-4xl md:text-5xl mb-4"
           >
             Claim Your Spot
           </motion.h2>
@@ -326,7 +326,7 @@ export default function Registration() {
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 1, delay: 0.5 }}
-            className="font-script text-[var(--ivory-muted)] italic text-sm tracking-wide"
+            className="section-copy font-script italic text-sm tracking-wide"
           >
             Register your team for the grand stage.
           </motion.p>
@@ -341,7 +341,7 @@ export default function Registration() {
            {/* Minimal Royal Shadow Frame */}
            <div className="absolute -inset-1 bg-[var(--antique-gold-soft)] opacity-20 blur-2xl pointer-events-none hidden md:block" />
            
-           <div className="bg-[#121212] p-6 md:p-14 border border-[rgba(212,175,55,0.15)] relative z-10 shadow-2xl backdrop-blur-sm overflow-hidden min-h-[400px] flex flex-col justify-center">
+           <div className="premium-card rounded-[2rem] p-6 md:p-14 relative z-10 overflow-hidden min-h-[400px] flex flex-col justify-center">
               {isOpen === false ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center text-center py-20 px-4">
                   <Lock size={48} strokeWidth={1} className="text-[var(--antique-gold-dim)] mb-6" />
@@ -384,13 +384,13 @@ export default function Registration() {
                     <div className="flex flex-col sm:flex-row gap-4">
                       <button
                         onClick={() => downloadPass()}
-                        className="bg-[var(--antique-gold)] text-black font-cinema tracking-widest uppercase px-8 py-3 text-xs hover:bg-[var(--ivory)] transition-colors"
+                        className="bg-[var(--antique-gold)] text-black font-cinema tracking-widest uppercase px-8 py-3 text-xs hover:bg-[var(--ivory)] transition-colors rounded-full"
                       >
                         Download Event Pass
                       </button>
                       <button
                         onClick={() => setStatus("idle")}
-                        className="engraved-btn font-cinema tracking-widest uppercase px-8 py-3 text-xs"
+                        className="engraved-btn font-cinema tracking-widest uppercase px-8 py-3 text-xs rounded-full"
                       >
                         Register Another Act
                       </button>
@@ -406,7 +406,7 @@ export default function Registration() {
                     className="flex flex-col gap-10"
                   >
                     {/* Fee Details Box */}
-                    <div className="bg-[#111] border-[1.5px] border-[var(--antique-gold)] p-6 text-center space-y-4 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden">
+                    <div className="premium-card-soft rounded-2xl border-[1.5px] border-[var(--antique-gold)] p-6 text-center space-y-4 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-red-600 via-[var(--antique-gold)] to-red-600 opacity-80" />
                       
                       <h4 className="font-cinema text-[var(--antique-gold)] text-xl uppercase tracking-widest">Registration Fees</h4>

@@ -21,7 +21,7 @@ const InstagramIcon = ({ size = 16, className = "" }: { size?: number; className
 
 export default function Contact() {
   return (
-    <section id="contact" className="py-32 px-4 flex justify-center relative bg-[var(--bg-charcoal)]">
+    <section id="contact" className="section-shell relative flex justify-center bg-[var(--bg-charcoal)]">
       
       {/* Soft spotlight behind contact cards */}
       <div className="absolute inset-0 stage-spotlight opacity-40 z-0 pointer-events-none" />
@@ -41,39 +41,40 @@ export default function Contact() {
            viewport={{ once: true, margin: "-50px" }}
            transition={{ duration: 1.5 }}
         >
-          <h2 className="font-cinema text-4xl text-[var(--ivory)] uppercase tracking-widest mb-4">
+          <p className="section-kicker mb-4">Direct Lines</p>
+          <h2 className="section-title text-4xl text-[var(--ivory)] mb-4">
             Meet The Directors
           </h2>
-          <p className="font-script text-[var(--antique-gold-soft)] italic text-sm tracking-wide mb-16">
+          <p className="section-copy font-script italic text-sm tracking-wide mb-16 max-w-2xl mx-auto">
             For inquiries regarding the grand stage, contact our coordinators.
           </p>
 
-          <div className="grid lg:grid-cols-2 gap-10">
+          <div className="grid lg:grid-cols-2 gap-8 xl:gap-10 text-left">
             {/* Student Coordinators */}
-            <div className="bg-[#111] border border-[rgba(212,175,55,0.1)] p-10 flex flex-col items-center">
-              <h3 className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-8 border-b border-[rgba(212,175,55,0.2)] pb-2 w-full">Student Execution</h3>
+            <div className="premium-card rounded-[1.75rem] p-8 md:p-10 flex flex-col items-center">
+              <h3 className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-8 border-b border-[rgba(212,175,55,0.2)] pb-2 w-full text-center">Student Execution</h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 w-full gap-6 mb-8 gap-y-8">
-                <div className="text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 w-full gap-4 mb-8">
+                <div className="premium-card-soft rounded-2xl p-4 text-center">
                   <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Vinayak</p>
                   <a href="tel:6361767094" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 63617 67094</a>
                 </div>
-                <div className="text-center">
+                <div className="premium-card-soft rounded-2xl p-4 text-center">
                   <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Samarth</p>
                   <a href="tel:7353682322" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 73536 82322</a>
                 </div>
-                <div className="text-center">
+                <div className="premium-card-soft rounded-2xl p-4 text-center">
                   <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Niharika</p>
                   <a href="tel:9663992104" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 96639 92104</a>
                 </div>
-                <div className="text-center">
+                <div className="premium-card-soft rounded-2xl p-4 text-center">
                   <p className="font-cinema text-[var(--ivory)] text-lg mb-1 tracking-wider">Sneha Y</p>
                   <a href="tel:7899057706" className="font-script text-[var(--antique-gold-soft)] hover:text-[var(--antique-gold)] italic flex items-center gap-2 justify-center"><Phone size={14}/> 78990 57706</a>
                 </div>
               </div>
 
               {/* Direct Digital Lines */}
-              <div className="flex gap-8 mt-4 pt-6 border-t border-[rgba(212,175,55,0.05)] w-full justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-6 border-t border-[rgba(212,175,55,0.05)] w-full justify-center items-center">
                 <a href="mailto:iserise12@gmail.com" className="group flex items-center gap-2 text-[var(--ivory-muted)] hover:text-[var(--antique-gold)] transition-colors">
                   <Mail size={16} className="text-[var(--royal-maroon)] group-hover:text-[var(--antique-gold)] transition-colors"/> 
                   <span className="font-script italic text-sm">iserise12@gmail.com</span>
@@ -86,19 +87,19 @@ export default function Contact() {
             </div>
 
             {/* Faculty Coordinators */}
-            <div className="bg-[#111] border border-[rgba(212,175,55,0.1)] p-10 flex flex-col items-center">
-              <h3 className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-8 border-b border-[rgba(212,175,55,0.2)] pb-2 w-full">Faculty Visionaries</h3>
+            <div className="premium-card rounded-[1.75rem] p-8 md:p-10 flex flex-col items-center">
+              <h3 className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-8 border-b border-[rgba(212,175,55,0.2)] pb-2 w-full text-center">Faculty Visionaries</h3>
               
-              <div className="flex flex-col gap-6 w-full items-start pl-4">
-                <div className="text-left border-l-2 border-[var(--royal-maroon)] pl-4">
+              <div className="flex flex-col gap-4 w-full items-start">
+                <div className="premium-card-soft rounded-2xl text-left border-l-2 border-[var(--royal-maroon)] pl-4 py-4 pr-4 w-full">
                   <p className="font-cinema text-[var(--ivory)] text-lg tracking-wider">Dr. L. B. Bhajantri</p>
                   <p className="font-script text-[var(--antique-gold-soft)] italic text-xs tracking-widest uppercase">Head of Department, ISE</p>
                 </div>
-                <div className="text-left border-l-2 border-[rgba(212,175,55,0.4)] pl-4">
+                <div className="premium-card-soft rounded-2xl text-left border-l-2 border-[rgba(212,175,55,0.4)] pl-4 py-4 pr-4 w-full">
                   <p className="font-cinema text-[var(--ivory)] text-lg tracking-wider">Prof. G. B. Shettar</p>
                   <p className="font-script text-[var(--antique-gold-soft)] italic text-xs tracking-widest uppercase">Coordinator, RISE Association</p>
                 </div>
-                <div className="text-left border-l-2 border-[rgba(212,175,55,0.4)] pl-4">
+                <div className="premium-card-soft rounded-2xl text-left border-l-2 border-[rgba(212,175,55,0.4)] pl-4 py-4 pr-4 w-full">
                   <p className="font-cinema text-[var(--ivory)] text-lg tracking-wider">Prof. S. S. Hiremath</p>
                   <p className="font-script text-[var(--antique-gold-soft)] italic text-xs tracking-widest uppercase">Coordinator, RISE Association</p>
                 </div>

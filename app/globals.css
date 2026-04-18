@@ -25,7 +25,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    cursor: none; /* We will use a custom spotlight cursor in React, but fallbacks are good */
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -34,6 +34,19 @@
     font-family: "Lora", serif; /* Fallback, handled in layout */
     overflow-x: hidden;
     position: relative;
+    line-height: 1.7;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: rgba(212, 175, 55, 0.28);
+    color: var(--ivory);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--antique-gold);
+    outline-offset: 3px;
   }
 
   /* Core Fabric/Grain Texture Overlay */
@@ -51,6 +64,34 @@
     background-size: 4px 4px;
     mix-blend-mode: overlay;
   }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(circle at top, rgba(212, 175, 55, 0.06), transparent 35%), radial-gradient(circle at bottom, rgba(128, 0, 0, 0.12), transparent 40%);
+  }
+
+  @media (max-width: 768px) {
+    body::before {
+      opacity: 0.015;
+      background-size: 6px 6px;
+    }
+
+    body::after {
+      opacity: 0.45;
+      background: radial-gradient(circle at top, rgba(212, 175, 55, 0.04), transparent 42%), radial-gradient(circle at bottom, rgba(128, 0, 0, 0.08), transparent 48%);
+    }
+  }
+
+  @media (max-width: 640px), (pointer: coarse) {
+    body::before,
+    body::after {
+      display: none;
+    }
+  }
 }
 
 @layer utilities {
@@ -60,6 +101,63 @@
   
   .font-script {
     font-family: inherit;
+  }
+
+  .page-frame {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .section-shell {
+    position: relative;
+    padding: 7rem 1rem;
+    scroll-margin-top: 7rem;
+  }
+
+  .section-shell-tight {
+    position: relative;
+    padding: 5rem 1rem;
+    scroll-margin-top: 7rem;
+  }
+
+  .section-kicker {
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-size: 0.72rem;
+    color: var(--antique-gold-soft);
+  }
+
+  .section-title {
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ivory);
+    text-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .section-copy {
+    color: var(--ivory-muted);
+    line-height: 1.85;
+  }
+
+  .premium-card {
+    background: linear-gradient(180deg, rgba(17, 17, 17, 0.96), rgba(10, 10, 10, 0.96));
+    border: 1px solid rgba(212, 175, 55, 0.12);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+  }
+
+  .premium-card-soft {
+    background: rgba(17, 17, 17, 0.78);
+    border: 1px solid rgba(212, 175, 55, 0.14);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(10px);
+  }
+
+  .surface-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.35), transparent);
   }
 
   /* Spotlight Background Effects */
@@ -95,9 +193,9 @@
 
   .engraved-btn {
     position: relative;
-    background: transparent;
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.03));
     color: var(--ivory);
-    border: 1px solid var(--antique-gold-soft);
+    border: 1px solid rgba(212, 175, 55, 0.35);
     overflow: hidden;
     transition: all 0.5s ease;
     box-shadow: inset 0 0 0 rgba(212, 175, 55, 0);
@@ -115,7 +213,7 @@
   .engraved-btn:hover {
     border-color: var(--antique-gold);
     color: #fff;
-    box-shadow: inset 0 0 20px var(--antique-gold-dim), 0 0 15px var(--antique-gold-dim);
+    box-shadow: inset 0 0 20px var(--antique-gold-dim), 0 0 22px rgba(212, 175, 55, 0.18);
   }
 
   .engraved-btn:hover::before {
@@ -136,6 +234,128 @@
     background: rgba(26, 26, 26, 0.8);
     border-bottom-color: var(--antique-gold);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .ghost-btn {
+    border: 1px solid rgba(245, 245, 220, 0.16);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.4s ease;
+  }
+
+  .ghost-btn:hover {
+    border-color: rgba(212, 175, 55, 0.32);
+    background: rgba(212, 175, 55, 0.06);
+    color: var(--ivory);
+  }
+
+  .nav-pill {
+    background: rgba(15, 15, 15, 0.72);
+    border: 1px solid rgba(212, 175, 55, 0.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    background: rgba(212, 175, 55, 0.05);
+    color: var(--ivory-muted);
+    padding: 0.5rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 1024px) {
+    .section-shell {
+      padding: 5.5rem 1rem;
+    }
+
+    .section-shell-tight {
+      padding: 4rem 1rem;
+    }
+
+    .section-title {
+      letter-spacing: 0.08em;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .section-shell {
+      padding: 4.25rem 1rem;
+      scroll-margin-top: 6.5rem;
+    }
+
+    .section-shell-tight {
+      padding: 3.5rem 1rem;
+      scroll-margin-top: 6.5rem;
+    }
+
+    .section-kicker {
+      letter-spacing: 0.24em;
+      font-size: 0.65rem;
+    }
+
+    .chip {
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      padding: 0.42rem 0.7rem;
+    }
+
+    .premium-card,
+    .premium-card-soft,
+    .framed-card {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(6px);
+    }
+
+    .framed-card {
+      transition: border-color 0.3s ease;
+    }
+
+    .engraved-btn,
+    .ghost-btn {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+  }
+
+  @media (max-width: 640px), (pointer: coarse) {
+    .premium-card,
+    .premium-card-soft,
+    .framed-card,
+    .nav-pill {
+      backdrop-filter: none;
+    }
+
+    .premium-card,
+    .premium-card-soft,
+    .framed-card {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+    }
+  }
+
+  @media (hover: none) {
+    .framed-card:hover {
+      transform: none;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      border-color: var(--antique-gold-dim);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   /* Animations for loading */

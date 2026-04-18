@@ -24,7 +24,7 @@ export default function Home() {
       </AnimatePresence>
 
       {!loading && (
-        <main className="min-h-screen" style={{ background: "var(--dark-bg)" }}>
+        <main className="min-h-screen page-frame" style={{ background: "var(--bg-charcoal)" }}>
           <Navbar />
           <Hero />
           <Results />

@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${playfair.variable} ${lora.variable} font-script antialiased bg-[#0F0F0F]`}>
         <CustomCursor />
         {/* Subtle vignette border around the entire screen to enhance the stage feel */}
-        <div className="pointer-events-none fixed inset-0 z-40 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.6)_100%)]" />
+        <div className="pointer-events-none fixed inset-0 z-40 hidden md:block bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.6)_100%)]" />
         {children}
       </body>
     </html>
