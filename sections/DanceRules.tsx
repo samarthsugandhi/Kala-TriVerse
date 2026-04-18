@@ -56,11 +56,13 @@ const ACTS = [
     id: "food",
     label: "Act V: Cooking without fire",
     subtitle: "Flavor · Presentation · Innovation",
-    desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art. Team Size: Max 2 members (Solo or Duo entries allowed). Note: Ingredients required for cooking must be brought entirely by yourselves as per your need. Usage of any fire, heaters, or open flames is strictly prohibited.",
+    desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art with strict no-heat, vegetarian, hygiene, and time-bound standards.",
     criteria: [
-      { title: "Taste & Flavor", detail: "Balance of flavors and overall deliciousness without cooking." },
-      { title: "Presentation", detail: "Visual appeal, garnishing, and neatness." },
-      { title: "Innovation", detail: "Creativity of the recipe and use of ingredients." }
+      { title: "Taste & Flavor (40)", detail: "Overall palatability, seasoning balance, and texture." },
+      { title: "Creativity & Innovation (20)", detail: "Originality of recipe and unique use of raw ingredients." },
+      { title: "Presentation & Plating (20)", detail: "Visual appeal, color coordination, and neatness." },
+      { title: "Hygiene & Cleanliness (10)", detail: "Maintenance of a clean workstation and safe handling." },
+      { title: "Time Management (10)", detail: "Completion within 90 minutes and readiness for judges." }
     ],
     symbol: "👨‍🍳",
   },
@@ -164,12 +166,72 @@ export default function DanceRules() {
                 </p>
               )}
 
+              {current.id === "food" && (
+                <div className="w-full max-w-4xl mb-12 text-left border border-[rgba(212,175,55,0.2)] bg-[rgba(212,175,55,0.05)] p-6 md:p-8 space-y-6">
+                  <div>
+                    <h4 className="font-cinema text-[var(--antique-gold)] text-sm tracking-[0.25em] uppercase mb-3">
+                      Cooking Without Fire: Rules & Regulations
+                    </h4>
+                    <p className="font-script text-[var(--ivory-dim)] text-sm leading-relaxed">
+                      Report 20 minutes early. Mandatory briefing happens 10 minutes before start. Judges' decision is final and binding.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-cinema text-[var(--ivory)] text-xs tracking-[0.18em] uppercase mb-2">1. General Guidelines</p>
+                      <ul className="list-disc pl-5 space-y-1 font-script text-[var(--ivory-dim)] text-sm leading-relaxed">
+                        <li>Team composition: Exactly 2 members per team.</li>
+                        <li>Theme: Nutritious, delicious, and aesthetically pleasing dishes using raw or pre-prepared ingredients.</li>
+                        <li>Time limit: 90 minutes (preparation, plating, and cleanup included).</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-cinema text-[var(--ivory)] text-xs tracking-[0.18em] uppercase mb-2">2. Prohibited Items (No-Heat Rule)</p>
+                      <ul className="list-disc pl-5 space-y-1 font-script text-[var(--ivory-dim)] text-sm leading-relaxed">
+                        <li>Gas stoves, induction cooktops, portable burners, microwaves, ovens, toasters, kettles, and blowtorches are prohibited.</li>
+                        <li>Any heating device usage leads to immediate disqualification.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-cinema text-[var(--ivory)] text-xs tracking-[0.18em] uppercase mb-2">3. Ingredients & Preparation</p>
+                      <ul className="list-disc pl-5 space-y-1 font-script text-[var(--ivory-dim)] text-sm leading-relaxed">
+                        <li>Strictly vegetarian only: no meat, poultry, fish, or eggs.</li>
+                        <li>Final assembly and major preparation must be done on-site during competition hours.</li>
+                        <li>Allowed pre-prepared items: pre-boiled potatoes, boiled pasta/corn, pre-washed/peeled vegetables.</li>
+                        <li>Participants must bring all required ingredients.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-cinema text-[var(--ivory)] text-xs tracking-[0.18em] uppercase mb-2">4. Equipment & Hygiene</p>
+                      <ul className="list-disc pl-5 space-y-1 font-script text-[var(--ivory-dim)] text-sm leading-relaxed">
+                        <li>Manual tools are encouraged (graters, manual choppers, whisks, mortar and pestle).</li>
+                        <li>Only small low-power electric mixers/blenders are permitted.</li>
+                        <li>Teams must bring cutlery, serving platters, and decorative elements.</li>
+                        <li>Workstations must remain clean; poor disposal/cleanliness results in score deduction.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-cinema text-[var(--ivory)] text-xs tracking-[0.18em] uppercase mb-2">5. Participant Instructions</p>
+                      <ul className="list-disc pl-5 space-y-1 font-script text-[var(--ivory-dim)] text-sm leading-relaxed">
+                        <li>Be ready to explain dish concept, ingredients, and nutritional value during judging.</li>
+                        <li>Ensure ingredients are washed and safely stored prior to the event start.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Judgment Criteria */}
               <div className="w-full text-left">
                 <p className="font-cinema text-[var(--antique-gold)] text-xs tracking-[0.3em] uppercase mb-6 text-center">
                   Judging Criteria
                 </p>
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className={`grid gap-8 ${current.id === "food" ? "md:grid-cols-2 lg:grid-cols-3" : "md:grid-cols-3"}`}>
                   {current.criteria.map((c, i) => (
                     <motion.div
                       key={i}

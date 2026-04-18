@@ -14,6 +14,12 @@ export default function Events() {
       title: "Dance Competition",
       subtitle: "The Canvas of Motion",
       desc: "Flowing rhythms cross three traditions: the divine geometry of Classical, the electric pulse of Western, and the earthy soul of Janapada (Folk).",
+      cardTitle: "Dance Competition - Quick Rules",
+      cardItems: [
+        "Covers Classical, Western, and Janapada (Folk) categories.",
+        "Submitted performance track must stay within 4 minutes.",
+        "Keep costumes, formations, and stage movement category-appropriate.",
+      ],
       symbol: "🪷",
       art: "bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.1),transparent_70%)]",
       delay: 0.2
@@ -23,6 +29,12 @@ export default function Events() {
       title: "Skit/Drama",
       subtitle: "The Theatre of Life",
       desc: "Masks fall and truth emerges. Command the stage, direct your peers, and emote stories that linger long after the final curtain.",
+      cardTitle: "Skit/Drama - Quick Rules",
+      cardItems: [
+        "Focus on expression, storytelling, and overall impact.",
+        "Coordinate props, blocking, and stage movement carefully.",
+        "Keep the performance neat, engaging, and time-disciplined.",
+      ],
       symbol: "🎭",
       art: "bg-[radial-gradient(circle_at_top_right,rgba(128,0,0,0.1),transparent_70%)]",
       delay: 0.4
@@ -32,6 +44,13 @@ export default function Events() {
       title: "Cooking without fire",
       subtitle: "Culinary Alchemy",
       desc: "Mastery without flame. Craft exquisite, cold-prepared culinary art where flavor, plating, and innovation take center stage.",
+      cardTitle: "Cooking Without Fire - Quick Rules",
+      cardItems: [
+        "Team size: exactly 2 members.",
+        "Strictly vegetarian only; no eggs/meat/fish.",
+        "No heat appliances; violation means disqualification.",
+        "Time limit: 90 minutes including cleanup.",
+      ],
       symbol: "👨‍🍳",
       art: "bg-[radial-gradient(circle_at_top_right,rgba(184,115,51,0.1),transparent_70%)]",
       delay: 0.6
@@ -103,6 +122,19 @@ export default function Events() {
                   <p className="font-script text-[var(--ivory-muted)] text-sm leading-loose">
                     {ev.desc}
                   </p>
+
+                  {(ev.id === "dance" || ev.id === "drama" || ev.id === "food") && (
+                    <div className="mt-5 text-left bg-[rgba(212,175,55,0.05)] border border-[rgba(212,175,55,0.2)] px-4 py-3">
+                      <p className="font-cinema text-[var(--antique-gold)] text-[10px] tracking-[0.2em] uppercase mb-2 text-center">
+                        {ev.cardTitle}
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1 font-script text-[var(--ivory-dim)] text-xs leading-relaxed">
+                        {ev.cardItems.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {/* Prize Info */}
                   <div className="mt-4 inline-block bg-[rgba(212,175,55,0.05)] border border-[rgba(212,175,55,0.2)] px-4 py-2">

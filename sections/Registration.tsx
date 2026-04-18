@@ -268,9 +268,7 @@ export default function Registration() {
     setStatus("loading");
     try {
       const eventDetails = EVENT_OPTIONS.find(o => o.value === form.act)?.label || form.act;
-      let eventDate = "April 2026";
-      if (form.act === "food") eventDate = "11th April 2026";
-      else if (["classical", "western", "folk", "drama"].includes(form.act)) eventDate = "13th April 2026";
+      let eventDate = "22nd April 2026";
 
       const finalForm = { ...form };
       finalForm.usn = finalForm.usn.trim().toUpperCase();
