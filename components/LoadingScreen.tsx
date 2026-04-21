@@ -3,9 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
-// Fallback to a deep cinematic bass drop/woosh from a safe public royalty-free source
-// Mixkit offers free sound effects.
-const SOUND_FX_URL = "https://assets.mixkit.co/active_storage/sfx/204/204-preview.mp3"; 
+// Audio file for loading screen curtain reveal
+const SOUND_FX_URL = "/biosStart.opus"; 
 
 export default function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<"enter" | "text" | "open" | "done">("enter");

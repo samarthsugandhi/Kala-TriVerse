@@ -95,11 +95,34 @@ export default function Hero() {
 
       <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl mx-auto w-full">
 
+        <motion.div
+          initial={{ opacity: 0, y: -16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-8 w-full max-w-4xl rounded-3xl border border-[rgba(212,175,55,0.45)] bg-[linear-gradient(135deg,rgba(212,175,55,0.16),rgba(17,17,17,0.92),rgba(212,175,55,0.10))] px-5 py-5 shadow-[0_0_0_1px_rgba(212,175,55,0.08),0_18px_50px_rgba(0,0,0,0.45)]"
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <p className="font-cinema text-[var(--antique-gold)] uppercase tracking-[0.3em] text-[0.7rem] mb-2">
+                Important Announcement
+              </p>
+              <p className="font-script text-[var(--ivory)] text-sm md:text-base leading-relaxed">
+                The event has been postponed. The new date will be announced soon. Registrations are open now, so you can register today.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 md:justify-end">
+              <span className="chip">Postponed</span>
+              <span className="chip">Registrations Open</span>
+              <span className="chip">Register Now</span>
+            </div>
+          </div>
+        </motion.div>
+
         <div className="flex flex-wrap justify-center gap-3 mb-8">
-          <span className="chip">22 April 2026</span>
+          <span className="chip">Postponed</span>
           <span className="chip">Two Venues</span>
           <span className="chip">Three Acts</span>
-          <span className="chip">Open to Students</span>
+          <span className="chip">Registrations Open</span>
         </div>
         
         {/* Subtle top indicator */}
@@ -163,7 +186,7 @@ export default function Hero() {
           {[
             { label: "Cooking", value: "12:30 PM", detail: "MBA Open Quadrangle" },
             { label: "Dance + Drama", value: "5:30 PM", detail: "Gallery Hall, BEC" },
-            { label: "Registration", value: "Open", detail: "Join the stage" },
+            { label: "Registration", value: "Open Now", detail: "Register today" },
           ].map((item) => (
             <div key={item.label} className="sm:border-r sm:border-[rgba(212,175,55,0.12)] last:border-r-0 pr-0 sm:pr-4">
               <p className="font-script text-[var(--antique-gold-soft)] uppercase tracking-[0.25em] text-[0.65rem] mb-1">{item.label}</p>
